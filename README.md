@@ -1,16 +1,18 @@
 # AgentJeff
 
-A TypeScript framework for building AI agents with tool use, structured workflows, and event streaming. Define agents, wire up tools with Zod schemas, and run them against any LLM — batteries included with [AI Badgr](https://aibadgr.com) as the default inference provider.
+Every production AI agent needs the same scaffolding: a run loop that drives LLM-tool-state cycles, typed tool dispatch, event streaming for observability, and a testing harness that works without calling a real LLM. AgentJeff ships all of it as composable TypeScript packages. You own the agent logic — not the plumbing.
 
-## Features
+[AI Badgr](https://aibadgr.com) is the default inference provider. Swap it out via the adapter interface.
 
-- **Typed agents & tools** — input/output validated with Zod at definition time
-- **Step-execution runtime** — LLM infers → calls tools → updates state → repeats
-- **Event streaming** — every action emits a typed event (tool calls, completions, checkpoints)
-- **Pluggable adapters** — swap out the inference provider or file I/O backend
-- **Domain packs** — pre-built workspace assistant and structured extraction agents
-- **Testing harness** — mock inference adapter + assertion helpers for deterministic tests
-- **CLI** — run agents from the terminal without writing code
+## What you get
+
+- **Working run loop** — `executeRun` drives infer → dispatch → update-state → repeat so you don't write it
+- **Typed tools with Zod** — input/output validated at definition time; schema errors surface before the LLM touches them
+- **Full event trace** — every step emits a typed event (`tool.called`, `tool.succeeded`, `state.updated`, `run.completed`) you can stream, log, or assert on
+- **Swappable inference** — `BadgrAdapter` works against any OpenAI-compatible endpoint; mock it entirely for tests
+- **Pre-built packs** — workspace assistant and structured extraction agents ready to use or fork
+- **Deterministic tests** — `MockInferenceAdapter` + `runAndAssert` let you test agent behavior without an LLM
+- **CLI** — run any agent from the terminal without writing code
 
 ## Packages
 
@@ -30,40 +32,47 @@ A TypeScript framework for building AI agents with tool use, structured workflow
 
 ```bash
 npm install @agentjeff/sdk zod openai
-```
-
-Set your API key:
-
-```bash
 export BADGR_API_KEY=your_key_here
 ```
 
-Define an agent and run it:
+Define an agent and watch the run lifecycle:
 
 ```typescript
 import { z } from 'zod';
 import { defineAgent, defineTool, run } from '@agentjeff/sdk';
 
-const greetTool = defineTool({
-  name: 'greet',
-  description: 'Generate a greeting for a user',
-  inputSchema: z.object({ name: z.string() }),
-  outputSchema: z.object({ message: z.string() }),
-  async execute({ name }) {
-    return { message: `Hello, ${name}!` };
+const summarizeTool = defineTool({
+  name: 'summarize',
+  description: 'Summarize a block of text into bullet points',
+  inputSchema: z.object({ text: z.string() }),
+  outputSchema: z.object({ bullets: z.array(z.string()) }),
+  async execute({ text }) {
+    return { bullets: text.split('. ').map(s => s.trim()).filter(Boolean) };
   },
 });
 
 const agent = defineAgent({
-  name: 'greeter',
-  instructions: 'You are a friendly greeter. Use the greet tool to greet users.',
-  inputSchema: z.object({ user: z.string() }),
-  outputSchema: z.object({ message: z.string() }),
-  tools: [greetTool],
+  name: 'analyst',
+  instructions: 'Summarize the given content using the summarize tool.',
+  inputSchema: z.object({ content: z.string() }),
+  outputSchema: z.object({ summary: z.string() }),
+  tools: [summarizeTool],
 });
 
-const result = await run(agent, { user: 'Alice' });
-console.log(result); // { message: 'Hello, Alice!' }
+const result = await run(
+  agent,
+  { content: 'AgentJeff owns the loop. Your tool executes. State updates. Repeat.' },
+  {
+    onEvent: (event) => console.log(`[${event.type}]`, event.payload),
+  },
+);
+// [run.started]    { runId: 'run_abc123', agentName: 'analyst' }
+// [tool.called]    { name: 'summarize', input: { text: '...' } }
+// [tool.succeeded] { name: 'summarize', durationMs: 2 }
+// [state.updated]  { step: 1 }
+// [run.completed]  { steps: 2, durationMs: 583 }
+
+console.log(result.summary);
 ```
 
 ## How It Works
@@ -84,18 +93,6 @@ defineAgent + defineTool
    └─────────┘
         │
       Run { status, result, state, events }
-```
-
-Each step emits typed events you can subscribe to:
-
-```typescript
-await run(agent, input, {
-  onEvent: (event) => {
-    console.log(event.type, event.payload);
-    // run.started | tool.called | tool.succeeded | tool.failed
-    // state.updated | checkpoint.created | run.completed | run.failed
-  },
-});
 ```
 
 ## Examples
