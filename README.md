@@ -28,6 +28,8 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 | [`@agentjeff/cli`](packages/cli) | `agentjeff` CLI binary |
 | [`@agentjeff/examples`](packages/examples) | Reference agent implementations |
 
+**Start with `@agentjeff/sdk`.** The other packages are available for lower-level access or framework extensions — ignore them until you need them.
+
 ## Quick Start
 
 ```bash
@@ -148,14 +150,15 @@ Use `MockInferenceAdapter` and `runAndAssert` for deterministic tests that don't
 ```typescript
 import { MockInferenceAdapter, runAndAssert } from '@agentjeff/testing';
 
-await runAndAssert(agent, input, {
-  adapter: new MockInferenceAdapter([
-    { content: null, toolCalls: [{ name: 'my_tool', input: { foo: 'bar' } }] },
+await runAndAssert(
+  agent,
+  input,
+  new MockInferenceAdapter([
+    { content: null, toolCalls: [{ id: 'tc1', name: 'my_tool', arguments: { foo: 'bar' } }] },
     { content: 'Done', toolCalls: [] },
   ]),
-  expectedStatus: 'completed',
-  expectedEvents: ['tool.called', 'tool.succeeded'],
-});
+  { status: 'completed', eventTypes: ['tool.called', 'tool.succeeded'] }
+);
 ```
 
 ## Development
@@ -167,9 +170,13 @@ npm install
 
 npm run build          # build all packages
 npm run build:watch    # watch mode
+npm run demo           # mock demo, no API key needed
 npm test               # run tests
+npm run test:scenarios # run 6 mock scenarios
 npm run lint           # type check
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor setup path.
 
 ## Environment Variables
 

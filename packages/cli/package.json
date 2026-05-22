@@ -33,6 +33,10 @@
   "keywords": [
     "agent",
     "cli",
+    "agent-cli",
+    "command-line",
+    "developer-tools",
+    "typescript",
     "agentjeff"
   ],
   "author": "Agent Jeff",

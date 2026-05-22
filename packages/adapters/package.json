@@ -29,10 +29,13 @@
   },
   "keywords": [
     "agent",
-    "llm",
-    "adapter",
+    "llm-adapter",
+    "openai-compatible",
+    "inference",
     "badgr",
     "aibadgr",
+    "adapters",
+    "typescript",
     "agentjeff"
   ],
   "author": "Agent Jeff",

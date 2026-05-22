@@ -25,9 +25,13 @@
   },
   "keywords": [
     "agent",
-    "llm",
     "ai",
-    "runtime",
+    "llm",
+    "ai-agent",
+    "agent-runtime",
+    "typescript",
+    "types",
+    "agent-framework",
     "agentjeff"
   ],
   "author": "Agent Jeff",

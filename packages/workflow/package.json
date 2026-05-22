@@ -27,6 +27,11 @@
   "keywords": [
     "agent",
     "workflow",
+    "orchestration",
+    "multi-step",
+    "pipeline",
+    "state-machine",
+    "typescript",
     "agentjeff"
   ],
   "author": "Agent Jeff",

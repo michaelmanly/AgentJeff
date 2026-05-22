@@ -32,7 +32,11 @@
   "keywords": [
     "agent",
     "packs",
-    "workspace",
+    "workspace-agent",
+    "extraction",
+    "pre-built",
+    "domain-pack",
+    "typescript",
     "agentjeff"
   ],
   "author": "Agent Jeff",

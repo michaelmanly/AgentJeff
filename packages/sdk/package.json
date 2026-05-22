@@ -31,9 +31,14 @@
   },
   "keywords": [
     "agent",
+    "ai-agent",
+    "agent-sdk",
+    "ai-sdk",
     "llm",
-    "sdk",
-    "badgr",
+    "agent-framework",
+    "typescript-sdk",
+    "typescript",
+    "orchestration",
     "agentjeff"
   ],
   "author": "Agent Jeff",

@@ -29,8 +29,13 @@
   },
   "keywords": [
     "agent",
+    "agent-runtime",
     "llm",
-    "runtime",
+    "execution-engine",
+    "orchestration",
+    "tool-dispatch",
+    "event-streaming",
+    "typescript",
     "agentjeff"
   ],
   "author": "Agent Jeff",
