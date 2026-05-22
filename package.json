@@ -1,14 +1,13 @@
 {
   "name": "agentjeff",
-  "private": true,
-  "workspaces": ["packages/*"],
+  "private": false,
   "scripts": {
     "test": "jest --testPathPattern='packages/runtime/src/__tests__'",
     "test:scenarios": "tsx packages/testing/src/run-scenarios.ts",
     "demo": "tsx scripts/demo.ts",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "build": "npm run build --workspaces --if-present",
-    "build:watch": "npm run build:watch --workspaces --if-present"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "tsup": "^8.0.0",
@@ -28,7 +27,6 @@
     "moduleNameMapper": {
       "^@agentjeff/core$": "<rootDir>/packages/core/src/index.ts",
       "^@agentjeff/runtime$": "<rootDir>/packages/runtime/src/index.ts",
-      "^@agentjeff/sdk$": "<rootDir>/packages/sdk/src/index.ts",
       "^@agentjeff/testing$": "<rootDir>/packages/testing/src/index.ts",
       "^@agentjeff/adapters$": "<rootDir>/packages/adapters/src/index.ts",
       "^@agentjeff/workflow$": "<rootDir>/packages/workflow/src/index.ts",
@@ -36,8 +34,42 @@
     },
     "extensionsToTreatAsEsm": [],
     "transform": {
-      "^.+\\.tsx?$": ["ts-jest", { "useESM": false }]
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": false
+        }
+      ]
     },
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
+  },
+  "version": "0.1.0",
+  "description": "AgentJeff npm SDK — defineAgent, defineTool, and run() with built-in runtime and adapters",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "zod-to-json-schema": "^3.23.0"
+  },
+  "peerDependencies": {
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
   }
 }
