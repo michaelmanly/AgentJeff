@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { BadgrAdapter, executeRun } from '@newatom/sdk';
-import { buildWorkspaceAgent } from '@newatom/examples';
-import { extractionAgent } from '@newatom/examples';
+import { BadgrAdapter, executeRun } from '@agentjeff/sdk';
+import { buildWorkspaceAgent } from '@agentjeff/examples';
+import { extractionAgent } from '@agentjeff/examples';
 
 const program = new Command();
 

@@ -1,6 +1,6 @@
 // src/workspace-assistant/agent.ts
 import { z } from "zod";
-import { defineAgent, defineTool, LocalWorkspaceAdapter } from "@newatom/sdk";
+import { defineAgent, defineTool, LocalWorkspaceAdapter } from "@agentjeff/sdk";
 function buildWorkspaceAgent(workspaceRoot) {
   const ws = new LocalWorkspaceAdapter({ root: workspaceRoot });
   const listFilesTool = defineTool({
@@ -49,7 +49,7 @@ Always start by listing files to understand the workspace structure.`,
 
 // src/structured-extraction/agent.ts
 import { z as z2 } from "zod";
-import { defineAgent as defineAgent2, defineTool as defineTool2 } from "@newatom/sdk";
+import { defineAgent as defineAgent2, defineTool as defineTool2 } from "@agentjeff/sdk";
 var ExtractedSchema = z2.object({
   category: z2.string(),
   priority: z2.enum(["low", "medium", "high"]),

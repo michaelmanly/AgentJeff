@@ -1,4 +1,4 @@
-import { AgentEvent } from '@newatom/core';
+import { AgentEvent } from '@agentjeff/core';
 
 type StepFn<TState> = (state: TState, ctx: StepContext) => Promise<Partial<TState>>;
 interface StepContext {

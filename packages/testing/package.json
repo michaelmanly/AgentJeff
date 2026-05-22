@@ -1,25 +1,42 @@
 {
-  "name": "@newatom/testing",
+  "name": "@agentjeff/testing",
   "version": "0.1.0",
-  "description": "Test harness for newatom agents: MockInferenceAdapter, runAndAssert, scenario runner",
+  "description": "Test harness for agentjeff agents: MockInferenceAdapter, runAndAssert, scenario runner",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean"
   },
   "dependencies": {
-    "@newatom/core": "*",
-    "@newatom/runtime": "*"
+    "@agentjeff/core": "*",
+    "@agentjeff/runtime": "*"
   },
-  "keywords": ["agent", "testing", "mock", "newatom"]
+  "keywords": [
+    "agent",
+    "testing",
+    "mock",
+    "agentjeff"
+  ],
+  "author": "Agent Jeff",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michaelmanly/agentjeff.git",
+    "directory": "packages/testing"
+  },
+  "homepage": "https://github.com/michaelmanly/agentjeff#readme",
+  "bugs": {
+    "url": "https://github.com/michaelmanly/agentjeff/issues"
+  }
 }

@@ -1,7 +1,7 @@
 export { defineAgent, defineTool } from './define';
-export { executeRun } from '@newatom/runtime';
-export type { RunRequest } from '@newatom/runtime';
-export { BadgrAdapter, LocalWorkspaceAdapter } from '@newatom/adapters';
-export * from '@newatom/core';
+export { executeRun } from '@agentjeff/runtime';
+export type { RunRequest } from '@agentjeff/runtime';
+export { BadgrAdapter, LocalWorkspaceAdapter } from '@agentjeff/adapters';
+export * from '@agentjeff/core';
 export { run } from './run';
 export type { RunOptions } from './run';

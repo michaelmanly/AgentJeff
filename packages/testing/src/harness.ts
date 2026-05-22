@@ -6,8 +6,8 @@ import {
   InferenceRequest,
   InferenceResponse,
   Run,
-} from '@newatom/core';
-import { executeRun } from '@newatom/runtime';
+} from '@agentjeff/core';
+import { executeRun } from '@agentjeff/runtime';
 
 export interface FixtureResponse {
   content: string | null;

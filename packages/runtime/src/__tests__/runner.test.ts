@@ -1,7 +1,7 @@
 import { executeRun } from '../runner';
-import { MockInferenceAdapter, runAndAssert } from '@newatom/testing';
-import { defineAgent, defineTool } from '@newatom/sdk';
-import { initialState } from '@newatom/core';
+import { MockInferenceAdapter, runAndAssert } from '@agentjeff/testing';
+import { defineAgent, defineTool } from '@agentjeff/sdk';
+import { initialState } from '@agentjeff/core';
 import { z } from 'zod';
 
 // --- shared fixtures ---

@@ -1,5 +1,5 @@
-import { AgentDef, InferenceAdapter, AgentEvent } from '@newatom/core';
-import { executeRun, RunRequest } from '@newatom/runtime';
+import { AgentDef, InferenceAdapter, AgentEvent } from '@agentjeff/core';
+import { executeRun, RunRequest } from '@agentjeff/runtime';
 
 export type StepFn<TState> = (state: TState, ctx: StepContext) => Promise<Partial<TState>>;
 

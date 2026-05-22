@@ -2,8 +2,9 @@
 import {
   initialState,
   newId
-} from "@newatom/core";
-import { zodToJsonSchema } from "zod-to-json-schema";
+} from "@agentjeff/core";
+import { zodToJsonSchema as _zodToJsonSchema } from "zod-to-json-schema";
+var zodToJsonSchema = _zodToJsonSchema;
 async function executeRun(req) {
   const runId = newId();
   const events = [];

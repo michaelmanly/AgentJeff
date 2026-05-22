@@ -1,26 +1,42 @@
 {
-  "name": "@newatom/workflow",
+  "name": "@agentjeff/workflow",
   "version": "0.1.0",
-  "description": "Step-based workflow builder for newatom agents",
+  "description": "Step-based workflow builder for agentjeff agents",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
   "dependencies": {
-    "@newatom/core": "*",
-    "@newatom/runtime": "*"
+    "@agentjeff/core": "*",
+    "@agentjeff/runtime": "*"
   },
-  "keywords": ["agent", "workflow", "newatom"]
+  "keywords": [
+    "agent",
+    "workflow",
+    "agentjeff"
+  ],
+  "author": "Agent Jeff",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michaelmanly/agentjeff.git",
+    "directory": "packages/workflow"
+  },
+  "homepage": "https://github.com/michaelmanly/agentjeff#readme",
+  "bugs": {
+    "url": "https://github.com/michaelmanly/agentjeff/issues"
+  }
 }

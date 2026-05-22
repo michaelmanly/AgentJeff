@@ -1,11 +1,11 @@
-import { AgentDef, AgentEvent, InferenceAdapter, Run } from '@newatom/core';
-import { executeRun } from '@newatom/runtime';
-import { BadgrAdapter } from '@newatom/adapters';
+import { AgentDef, AgentEvent, InferenceAdapter, Run } from '@agentjeff/core';
+import { executeRun } from '@agentjeff/runtime';
+import { BadgrAdapter } from '@agentjeff/adapters';
 
 export interface RunOptions {
   adapter?: InferenceAdapter;
   onEvent?: (event: AgentEvent) => void;
-  checkpointSaver?: (runId: string, state: import('@newatom/core').AgentState) => Promise<void>;
+  checkpointSaver?: (runId: string, state: import('@agentjeff/core').AgentState) => Promise<void>;
 }
 
 export async function run(

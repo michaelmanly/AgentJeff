@@ -1,4 +1,4 @@
-import { BadgrAdapter, executeRun } from '@newatom/sdk';
+import { BadgrAdapter, executeRun } from '@agentjeff/sdk';
 import { extractionAgent } from './agent';
 
 async function main() {

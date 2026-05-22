@@ -1,5 +1,5 @@
 {
-  "name": "@newatom/core",
+  "name": "@agentjeff/core",
   "version": "0.1.0",
   "description": "Domain-agnostic agent execution primitives: Agent, Run, State, Tool, Adapter, Event, Policy",
   "license": "MIT",
@@ -8,12 +8,14 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
@@ -21,5 +23,21 @@
   "peerDependencies": {
     "zod": "^3.22.0"
   },
-  "keywords": ["agent", "llm", "ai", "runtime", "newatom"]
+  "keywords": [
+    "agent",
+    "llm",
+    "ai",
+    "runtime",
+    "agentjeff"
+  ],
+  "author": "Agent Jeff",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michaelmanly/agentjeff.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/michaelmanly/agentjeff#readme",
+  "bugs": {
+    "url": "https://github.com/michaelmanly/agentjeff/issues"
+  }
 }

@@ -8,9 +8,11 @@ import {
   ToolContext,
   initialState,
   newId,
-} from '@newatom/core';
+} from '@agentjeff/core';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema as _zodToJsonSchema } from 'zod-to-json-schema';
+
+const zodToJsonSchema = _zodToJsonSchema as (schema: unknown) => Record<string, unknown>;
 
 export interface RunRequest {
   agent: AgentDef;
@@ -62,7 +64,7 @@ export async function executeRun(req: RunRequest): Promise<Run> {
   const toolDefs = agent.tools.map((t) => ({
     name: t.name,
     description: t.description,
-    parameters: zodToJsonSchema(t.inputSchema as z.ZodTypeAny) as Record<string, unknown>,
+    parameters: zodToJsonSchema(t.inputSchema),
   }));
 
   let stepCount = 0;

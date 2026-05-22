@@ -38,7 +38,7 @@ __export(index_exports, {
 module.exports = __toCommonJS(index_exports);
 
 // src/harness.ts
-var import_runtime = require("@newatom/runtime");
+var import_runtime = require("@agentjeff/runtime");
 var MockInferenceAdapter = class {
   responses;
   index = 0;
@@ -87,7 +87,7 @@ async function runAndAssert(agent, input, adapter, assertions) {
 // src/scenarios.ts
 var import_promises = __toESM(require("fs/promises"));
 var import_path = __toESM(require("path"));
-var import_runtime2 = require("@newatom/runtime");
+var import_runtime2 = require("@agentjeff/runtime");
 async function runScenario(scenarioNumber, name, opts) {
   const start = Date.now();
   let run;

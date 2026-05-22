@@ -39,13 +39,13 @@ function defineTool(def) {
 }
 
 // src/index.ts
-var import_runtime2 = require("@newatom/runtime");
-var import_adapters2 = require("@newatom/adapters");
-__reExport(index_exports, require("@newatom/core"), module.exports);
+var import_runtime2 = require("@agentjeff/runtime");
+var import_adapters2 = require("@agentjeff/adapters");
+__reExport(index_exports, require("@agentjeff/core"), module.exports);
 
 // src/run.ts
-var import_runtime = require("@newatom/runtime");
-var import_adapters = require("@newatom/adapters");
+var import_runtime = require("@agentjeff/runtime");
+var import_adapters = require("@agentjeff/adapters");
 async function run(agent, input, opts = {}) {
   const adapter = opts.adapter ?? new import_adapters.BadgrAdapter();
   return (0, import_runtime.executeRun)({
@@ -64,5 +64,5 @@ async function run(agent, input, opts = {}) {
   defineTool,
   executeRun,
   run,
-  ...require("@newatom/core")
+  ...require("@agentjeff/core")
 });

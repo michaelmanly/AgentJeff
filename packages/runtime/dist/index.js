@@ -25,8 +25,9 @@ __export(index_exports, {
 module.exports = __toCommonJS(index_exports);
 
 // src/runner.ts
-var import_core = require("@newatom/core");
+var import_core = require("@agentjeff/core");
 var import_zod_to_json_schema = require("zod-to-json-schema");
+var zodToJsonSchema = import_zod_to_json_schema.zodToJsonSchema;
 async function executeRun(req) {
   const runId = (0, import_core.newId)();
   const events = [];
@@ -58,7 +59,7 @@ async function executeRun(req) {
   const toolDefs = agent.tools.map((t) => ({
     name: t.name,
     description: t.description,
-    parameters: (0, import_zod_to_json_schema.zodToJsonSchema)(t.inputSchema)
+    parameters: zodToJsonSchema(t.inputSchema)
   }));
   let stepCount = 0;
   try {

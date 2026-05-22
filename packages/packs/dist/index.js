@@ -28,12 +28,12 @@ module.exports = __toCommonJS(index_exports);
 
 // src/workspace-pack/agent.ts
 var import_zod2 = require("zod");
-var import_sdk2 = require("@newatom/sdk");
-var import_adapters = require("@newatom/adapters");
+var import_sdk2 = require("@agentjeff/sdk");
+var import_adapters = require("@agentjeff/adapters");
 
 // src/workspace-pack/tools.ts
 var import_zod = require("zod");
-var import_sdk = require("@newatom/sdk");
+var import_sdk = require("@agentjeff/sdk");
 function buildWorkspaceTools(adapter) {
   const listFiles = (0, import_sdk.defineTool)({
     name: "list_files",
@@ -83,7 +83,7 @@ Always start by listing files. Be concise and factual.`,
 
 // src/extraction-pack/agent.ts
 var import_zod3 = require("zod");
-var import_sdk3 = require("@newatom/sdk");
+var import_sdk3 = require("@agentjeff/sdk");
 var ResultSchema = import_zod3.z.object({
   category: import_zod3.z.string(),
   priority: import_zod3.z.enum(["low", "medium", "high"]),

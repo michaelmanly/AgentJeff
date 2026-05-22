@@ -27,7 +27,7 @@ module.exports = __toCommonJS(index_exports);
 
 // src/workspace-assistant/agent.ts
 var import_zod = require("zod");
-var import_sdk = require("@newatom/sdk");
+var import_sdk = require("@agentjeff/sdk");
 function buildWorkspaceAgent(workspaceRoot) {
   const ws = new import_sdk.LocalWorkspaceAdapter({ root: workspaceRoot });
   const listFilesTool = (0, import_sdk.defineTool)({
@@ -76,7 +76,7 @@ Always start by listing files to understand the workspace structure.`,
 
 // src/structured-extraction/agent.ts
 var import_zod2 = require("zod");
-var import_sdk2 = require("@newatom/sdk");
+var import_sdk2 = require("@agentjeff/sdk");
 var ExtractedSchema = import_zod2.z.object({
   category: import_zod2.z.string(),
   priority: import_zod2.z.enum(["low", "medium", "high"]),

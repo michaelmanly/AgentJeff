@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { defineTool } from '@newatom/sdk';
-import { LocalWorkspaceAdapter } from '@newatom/adapters';
+import { defineTool } from '@agentjeff/sdk';
+import { LocalWorkspaceAdapter } from '@agentjeff/adapters';
 
 export function buildWorkspaceTools(adapter: LocalWorkspaceAdapter) {
   const listFiles = defineTool({
