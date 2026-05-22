@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@newatom/core": ["packages/core/src/index.ts"],
+      "@newatom/runtime": ["packages/runtime/src/index.ts"],
+      "@newatom/sdk": ["packages/sdk/src/index.ts"],
+      "@newatom/testing": ["packages/testing/src/index.ts"],
+      "@newatom/adapters": ["packages/adapters/src/index.ts"],
+      "@newatom/workflow": ["packages/workflow/src/index.ts"],
+      "@newatom/packs": ["packages/packs/src/index.ts"]
+    }
+  },
+  "include": ["packages/*/src/**/*.ts"]
+}

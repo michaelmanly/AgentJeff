@@ -1,0 +1,25 @@
+{
+  "name": "@newatom/testing",
+  "version": "0.1.0",
+  "description": "Test harness for newatom agents: MockInferenceAdapter, runAndAssert, scenario runner",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  },
+  "dependencies": {
+    "@newatom/core": "*",
+    "@newatom/runtime": "*"
+  },
+  "keywords": ["agent", "testing", "mock", "newatom"]
+}

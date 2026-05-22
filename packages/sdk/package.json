@@ -1,0 +1,31 @@
+{
+  "name": "@newatom/sdk",
+  "version": "0.1.0",
+  "description": "newatom SDK — defineAgent, defineTool, run() with AI Badgr as default adapter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "dependencies": {
+    "@newatom/core": "*",
+    "@newatom/runtime": "*",
+    "@newatom/adapters": "*"
+  },
+  "peerDependencies": {
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "keywords": ["agent", "llm", "sdk", "badgr", "newatom"]
+}

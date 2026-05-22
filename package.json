@@ -1,0 +1,42 @@
+{
+  "name": "newatom",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "jest --testPathPattern='packages/runtime/src/__tests__'",
+    "test:scenarios": "tsx packages/testing/src/run-scenarios.ts",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "build": "npm run build --workspaces --if-present",
+    "build:watch": "npm run build:watch --workspaces --if-present"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "zod": "^3.22.0",
+    "openai": "^4.0.0",
+    "commander": "^11.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@newatom/core$": "<rootDir>/packages/core/src/index.ts",
+      "^@newatom/runtime$": "<rootDir>/packages/runtime/src/index.ts",
+      "^@newatom/sdk$": "<rootDir>/packages/sdk/src/index.ts",
+      "^@newatom/testing$": "<rootDir>/packages/testing/src/index.ts",
+      "^@newatom/adapters$": "<rootDir>/packages/adapters/src/index.ts",
+      "^@newatom/workflow$": "<rootDir>/packages/workflow/src/index.ts",
+      "^@newatom/packs$": "<rootDir>/packages/packs/src/index.ts"
+    },
+    "extensionsToTreatAsEsm": [],
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", { "useESM": false }]
+    },
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+  }
+}

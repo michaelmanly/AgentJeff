@@ -1,0 +1,36 @@
+{
+  "name": "@newatom/runtime",
+  "version": "0.1.0",
+  "description": "Agent step execution loop: infer, call tools, emit events, checkpoint, return result",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "dependencies": {
+    "@newatom/core": "*",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "peerDependencies": {
+    "zod": "^3.22.0"
+  },
+  "keywords": [
+    "agent",
+    "llm",
+    "runtime",
+    "newatom"
+  ]
+}

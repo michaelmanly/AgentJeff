@@ -1,0 +1,30 @@
+{
+  "name": "@newatom/cli",
+  "version": "0.1.0",
+  "description": "CLI for newatom — run agents, inspect events, run tests",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": { "newatom": "./dist/index.js" },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@newatom/sdk": "*",
+    "@newatom/examples": "*",
+    "@newatom/adapters": "*"
+  },
+  "peerDependencies": {
+    "commander": "^11.0.0",
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "keywords": ["agent", "cli", "newatom"]
+}

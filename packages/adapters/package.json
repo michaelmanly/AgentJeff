@@ -1,0 +1,29 @@
+{
+  "name": "@newatom/adapters",
+  "version": "0.1.0",
+  "description": "Adapters for newatom: BadgrAdapter (AI Badgr inference) and LocalWorkspaceAdapter (file I/O)",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "dependencies": {
+    "@newatom/core": "*"
+  },
+  "peerDependencies": {
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "keywords": ["agent", "llm", "adapter", "badgr", "aibadgr", "newatom"]
+}
