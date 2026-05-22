@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { defineAgent, defineTool } from '@newatom/sdk';
+import { defineAgent, defineTool } from '@agentjeff/sdk';
 
 const ExtractedSchema = z.object({
   category: z.string(),

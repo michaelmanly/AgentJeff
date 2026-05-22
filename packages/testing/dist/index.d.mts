@@ -1,4 +1,4 @@
-import { InferenceAdapter, InferenceRequest, InferenceResponse, Run, AgentEvent, AgentState, AgentDef } from '@newatom/core';
+import { InferenceAdapter, InferenceRequest, InferenceResponse, Run, AgentEvent, AgentState, AgentDef } from '@agentjeff/core';
 
 interface FixtureResponse {
     content: string | null;

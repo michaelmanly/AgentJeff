@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { defineAgent, defineTool, LocalWorkspaceAdapter } from '@newatom/sdk';
+import { defineAgent, defineTool, LocalWorkspaceAdapter } from '@agentjeff/sdk';
 
 export function buildWorkspaceAgent(workspaceRoot: string) {
   const ws = new LocalWorkspaceAdapter({ root: workspaceRoot });

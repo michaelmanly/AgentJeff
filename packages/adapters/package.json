@@ -1,29 +1,48 @@
 {
-  "name": "@newatom/adapters",
+  "name": "@agentjeff/adapters",
   "version": "0.1.0",
-  "description": "Adapters for newatom: BadgrAdapter (AI Badgr inference) and LocalWorkspaceAdapter (file I/O)",
+  "description": "Adapters for agentjeff: BadgrAdapter (AI Badgr inference) and LocalWorkspaceAdapter (file I/O)",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
   "dependencies": {
-    "@newatom/core": "*"
+    "@agentjeff/core": "*"
   },
   "peerDependencies": {
     "openai": "^4.0.0",
     "zod": "^3.22.0"
   },
-  "keywords": ["agent", "llm", "adapter", "badgr", "aibadgr", "newatom"]
+  "keywords": [
+    "agent",
+    "llm",
+    "adapter",
+    "badgr",
+    "aibadgr",
+    "agentjeff"
+  ],
+  "author": "Agent Jeff",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michaelmanly/agentjeff.git",
+    "directory": "packages/adapters"
+  },
+  "homepage": "https://github.com/michaelmanly/agentjeff#readme",
+  "bugs": {
+    "url": "https://github.com/michaelmanly/agentjeff/issues"
+  }
 }

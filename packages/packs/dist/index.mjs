@@ -1,11 +1,11 @@
 // src/workspace-pack/agent.ts
 import { z as z2 } from "zod";
-import { defineAgent } from "@newatom/sdk";
-import { LocalWorkspaceAdapter } from "@newatom/adapters";
+import { defineAgent } from "@agentjeff/sdk";
+import { LocalWorkspaceAdapter } from "@agentjeff/adapters";
 
 // src/workspace-pack/tools.ts
 import { z } from "zod";
-import { defineTool } from "@newatom/sdk";
+import { defineTool } from "@agentjeff/sdk";
 function buildWorkspaceTools(adapter) {
   const listFiles = defineTool({
     name: "list_files",
@@ -55,7 +55,7 @@ Always start by listing files. Be concise and factual.`,
 
 // src/extraction-pack/agent.ts
 import { z as z3 } from "zod";
-import { defineAgent as defineAgent2, defineTool as defineTool2 } from "@newatom/sdk";
+import { defineAgent as defineAgent2, defineTool as defineTool2 } from "@agentjeff/sdk";
 var ResultSchema = z3.object({
   category: z3.string(),
   priority: z3.enum(["low", "medium", "high"]),

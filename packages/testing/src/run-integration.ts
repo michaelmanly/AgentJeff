@@ -1,6 +1,6 @@
 import { runScenario, writeSummary, ScenarioResult } from './scenarios';
-import { BadgrAdapter } from '@newatom/adapters';
-import { buildWorkspaceAssistant, extractionAgent } from '@newatom/packs';
+import { BadgrAdapter } from '@agentjeff/adapters';
+import { buildWorkspaceAssistant, extractionAgent } from '@agentjeff/packs';
 import { z } from 'zod';
 import os from 'os';
 import path from 'path';

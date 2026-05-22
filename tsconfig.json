@@ -10,13 +10,13 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@newatom/core": ["packages/core/src/index.ts"],
-      "@newatom/runtime": ["packages/runtime/src/index.ts"],
-      "@newatom/sdk": ["packages/sdk/src/index.ts"],
-      "@newatom/testing": ["packages/testing/src/index.ts"],
-      "@newatom/adapters": ["packages/adapters/src/index.ts"],
-      "@newatom/workflow": ["packages/workflow/src/index.ts"],
-      "@newatom/packs": ["packages/packs/src/index.ts"]
+      "@agentjeff/core": ["packages/core/src/index.ts"],
+      "@agentjeff/runtime": ["packages/runtime/src/index.ts"],
+      "@agentjeff/sdk": ["packages/sdk/src/index.ts"],
+      "@agentjeff/testing": ["packages/testing/src/index.ts"],
+      "@agentjeff/adapters": ["packages/adapters/src/index.ts"],
+      "@agentjeff/workflow": ["packages/workflow/src/index.ts"],
+      "@agentjeff/packs": ["packages/packs/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*.ts"]

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AgentDef, ToolDef, ToolContext } from '@newatom/core';
+import { AgentDef, ToolDef, ToolContext } from '@agentjeff/core';
 
 export function defineAgent<
   TInput extends z.ZodTypeAny,

@@ -1,10 +1,10 @@
 import { runScenario, writeSummary, ScenarioResult } from './scenarios';
 import { MockInferenceAdapter } from './harness';
-import { executeRun } from '@newatom/runtime';
-import { defineAgent, defineTool } from '@newatom/sdk';
-import { LocalWorkspaceAdapter } from '@newatom/adapters';
-import { buildWorkspaceAssistant, extractionAgent } from '@newatom/packs';
-import type { AgentEvent } from '@newatom/core';
+import { executeRun } from '@agentjeff/runtime';
+import { defineAgent, defineTool } from '@agentjeff/sdk';
+import { LocalWorkspaceAdapter } from '@agentjeff/adapters';
+import { buildWorkspaceAssistant, extractionAgent } from '@agentjeff/packs';
+import type { AgentEvent } from '@agentjeff/core';
 import { z } from 'zod';
 import os from 'os';
 import path from 'path';

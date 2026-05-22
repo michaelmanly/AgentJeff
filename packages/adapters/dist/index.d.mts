@@ -1,4 +1,4 @@
-import { InferenceAdapter, InferenceRequest, InferenceResponse, WorkspaceAdapter } from '@newatom/core';
+import { InferenceAdapter, InferenceRequest, InferenceResponse, WorkspaceAdapter } from '@agentjeff/core';
 
 interface BadgrAdapterOptions {
     apiKey?: string;

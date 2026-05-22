@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { AgentDef, AgentEvent, InferenceAdapter, Run } from '@newatom/core';
-import { executeRun } from '@newatom/runtime';
+import { AgentDef, AgentEvent, InferenceAdapter, Run } from '@agentjeff/core';
+import { executeRun } from '@agentjeff/runtime';
 
 export interface ScenarioResult {
   scenario: number;

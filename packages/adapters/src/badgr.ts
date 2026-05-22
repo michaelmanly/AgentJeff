@@ -4,7 +4,7 @@ import {
   InferenceRequest,
   InferenceResponse,
   ToolCall,
-} from '@newatom/core';
+} from '@agentjeff/core';
 
 export interface BadgrAdapterOptions {
   apiKey?: string;

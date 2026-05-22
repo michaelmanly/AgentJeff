@@ -1,29 +1,36 @@
 {
-  "name": "@newatom/examples",
+  "name": "@agentjeff/examples",
   "version": "0.1.0",
-  "description": "Example agents for newatom: workspace assistant, structured extraction",
+  "description": "Example agents for agentjeff: workspace assistant, structured extraction",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean"
   },
   "dependencies": {
-    "@newatom/sdk": "*",
-    "@newatom/adapters": "*"
+    "@agentjeff/sdk": "*",
+    "@agentjeff/adapters": "*"
   },
   "peerDependencies": {
     "openai": "^4.0.0",
     "zod": "^3.22.0"
   },
-  "keywords": ["agent", "examples", "newatom"]
+  "keywords": [
+    "agent",
+    "examples",
+    "agentjeff"
+  ],
+  "private": true
 }

@@ -4,9 +4,9 @@
 
 // src/index.ts
 var import_commander = require("commander");
-var import_sdk = require("@newatom/sdk");
-var import_examples = require("@newatom/examples");
-var import_examples2 = require("@newatom/examples");
+var import_sdk = require("@agentjeff/sdk");
+var import_examples = require("@agentjeff/examples");
+var import_examples2 = require("@agentjeff/examples");
 var program = new import_commander.Command();
 program.name("newatom").description("newatom agent runtime CLI").version("0.1.0");
 program.command("run:workspace").description("Run the workspace assistant on a local directory").argument("<path>", "workspace path").argument("[task]", "task to perform", "Summarize the repository structure.").option("--events", "show all events").action(async (wsPath, task, opts) => {

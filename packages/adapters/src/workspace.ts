@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { WorkspaceAdapter } from '@newatom/core';
+import { WorkspaceAdapter } from '@agentjeff/core';
 
 const execFileAsync = promisify(execFile);
 

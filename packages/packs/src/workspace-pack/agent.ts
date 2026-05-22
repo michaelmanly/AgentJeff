@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { defineAgent } from '@newatom/sdk';
-import { LocalWorkspaceAdapter } from '@newatom/adapters';
+import { defineAgent } from '@agentjeff/sdk';
+import { LocalWorkspaceAdapter } from '@agentjeff/adapters';
 import { buildWorkspaceTools } from './tools';
 
 export function buildWorkspaceAssistant(workspaceRoot: string) {

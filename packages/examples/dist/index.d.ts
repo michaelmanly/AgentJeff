@@ -1,7 +1,7 @@
-import * as _newatom_sdk from '@newatom/sdk';
+import * as _agentjeff_sdk from '@agentjeff/sdk';
 import { z } from 'zod';
 
-declare function buildWorkspaceAgent(workspaceRoot: string): _newatom_sdk.AgentDef<z.ZodObject<{
+declare function buildWorkspaceAgent(workspaceRoot: string): _agentjeff_sdk.AgentDef<z.ZodObject<{
     task: z.ZodString;
     path: z.ZodDefault<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
@@ -18,7 +18,7 @@ declare function buildWorkspaceAgent(workspaceRoot: string): _newatom_sdk.AgentD
     summary: string;
 }>>;
 
-declare const extractionAgent: _newatom_sdk.AgentDef<z.ZodObject<{
+declare const extractionAgent: _agentjeff_sdk.AgentDef<z.ZodObject<{
     text: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     text: string;

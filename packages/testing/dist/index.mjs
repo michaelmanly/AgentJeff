@@ -1,5 +1,5 @@
 // src/harness.ts
-import { executeRun } from "@newatom/runtime";
+import { executeRun } from "@agentjeff/runtime";
 var MockInferenceAdapter = class {
   responses;
   index = 0;
@@ -48,7 +48,7 @@ async function runAndAssert(agent, input, adapter, assertions) {
 // src/scenarios.ts
 import fs from "fs/promises";
 import path from "path";
-import { executeRun as executeRun2 } from "@newatom/runtime";
+import { executeRun as executeRun2 } from "@agentjeff/runtime";
 async function runScenario(scenarioNumber, name, opts) {
   const start = Date.now();
   let run;

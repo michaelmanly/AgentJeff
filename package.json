@@ -1,5 +1,5 @@
 {
-  "name": "newatom",
+  "name": "agentjeff",
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
@@ -25,13 +25,13 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@newatom/core$": "<rootDir>/packages/core/src/index.ts",
-      "^@newatom/runtime$": "<rootDir>/packages/runtime/src/index.ts",
-      "^@newatom/sdk$": "<rootDir>/packages/sdk/src/index.ts",
-      "^@newatom/testing$": "<rootDir>/packages/testing/src/index.ts",
-      "^@newatom/adapters$": "<rootDir>/packages/adapters/src/index.ts",
-      "^@newatom/workflow$": "<rootDir>/packages/workflow/src/index.ts",
-      "^@newatom/packs$": "<rootDir>/packages/packs/src/index.ts"
+      "^@agentjeff/core$": "<rootDir>/packages/core/src/index.ts",
+      "^@agentjeff/runtime$": "<rootDir>/packages/runtime/src/index.ts",
+      "^@agentjeff/sdk$": "<rootDir>/packages/sdk/src/index.ts",
+      "^@agentjeff/testing$": "<rootDir>/packages/testing/src/index.ts",
+      "^@agentjeff/adapters$": "<rootDir>/packages/adapters/src/index.ts",
+      "^@agentjeff/workflow$": "<rootDir>/packages/workflow/src/index.ts",
+      "^@agentjeff/packs$": "<rootDir>/packages/packs/src/index.ts"
     },
     "extensionsToTreatAsEsm": [],
     "transform": {

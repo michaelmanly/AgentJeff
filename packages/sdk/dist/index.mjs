@@ -7,13 +7,13 @@ function defineTool(def) {
 }
 
 // src/index.ts
-import { executeRun as executeRun2 } from "@newatom/runtime";
-import { BadgrAdapter as BadgrAdapter2, LocalWorkspaceAdapter } from "@newatom/adapters";
-export * from "@newatom/core";
+import { executeRun as executeRun2 } from "@agentjeff/runtime";
+import { BadgrAdapter as BadgrAdapter2, LocalWorkspaceAdapter } from "@agentjeff/adapters";
+export * from "@agentjeff/core";
 
 // src/run.ts
-import { executeRun } from "@newatom/runtime";
-import { BadgrAdapter } from "@newatom/adapters";
+import { executeRun } from "@agentjeff/runtime";
+import { BadgrAdapter } from "@agentjeff/adapters";
 async function run(agent, input, opts = {}) {
   const adapter = opts.adapter ?? new BadgrAdapter();
   return executeRun({

@@ -1,8 +1,8 @@
-import * as _newatom_sdk from '@newatom/sdk';
+import * as _agentjeff_sdk from '@agentjeff/sdk';
 import { z } from 'zod';
-import { LocalWorkspaceAdapter } from '@newatom/adapters';
+import { LocalWorkspaceAdapter } from '@agentjeff/adapters';
 
-declare function buildWorkspaceAssistant(workspaceRoot: string): _newatom_sdk.AgentDef<z.ZodObject<{
+declare function buildWorkspaceAssistant(workspaceRoot: string): _agentjeff_sdk.AgentDef<z.ZodObject<{
     task: z.ZodString;
     path: z.ZodDefault<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
@@ -20,21 +20,21 @@ declare function buildWorkspaceAssistant(workspaceRoot: string): _newatom_sdk.Ag
 }>>;
 
 declare function buildWorkspaceTools(adapter: LocalWorkspaceAdapter): {
-    listFiles: _newatom_sdk.ToolDef<z.ZodObject<{
+    listFiles: _agentjeff_sdk.ToolDef<z.ZodObject<{
         dir: z.ZodDefault<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         dir: string;
     }, {
         dir?: string | undefined;
     }>, z.ZodArray<z.ZodString, "many">>;
-    readFile: _newatom_sdk.ToolDef<z.ZodObject<{
+    readFile: _agentjeff_sdk.ToolDef<z.ZodObject<{
         path: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         path: string;
     }, {
         path: string;
     }>, z.ZodString>;
-    writeFile: _newatom_sdk.ToolDef<z.ZodObject<{
+    writeFile: _agentjeff_sdk.ToolDef<z.ZodObject<{
         path: z.ZodString;
         content: z.ZodString;
     }, "strip", z.ZodTypeAny, {
@@ -52,7 +52,7 @@ declare function buildWorkspaceTools(adapter: LocalWorkspaceAdapter): {
     }>>;
 };
 
-declare const extractionAgent: _newatom_sdk.AgentDef<z.ZodObject<{
+declare const extractionAgent: _agentjeff_sdk.AgentDef<z.ZodObject<{
     text: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     text: string;
