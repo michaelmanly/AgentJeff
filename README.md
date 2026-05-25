@@ -148,14 +148,18 @@ Use `MockInferenceAdapter` and `runAndAssert` for deterministic tests that don't
 ```typescript
 import { MockInferenceAdapter, runAndAssert } from '@agentjeff/testing';
 
-await runAndAssert(agent, input, {
-  adapter: new MockInferenceAdapter([
-    { content: null, toolCalls: [{ name: 'my_tool', input: { foo: 'bar' } }] },
+await runAndAssert(
+  agent,
+  { content: 'some input' },
+  new MockInferenceAdapter([
+    { content: null, toolCalls: [{ id: 'tc1', name: 'my_tool', arguments: { foo: 'bar' } }] },
     { content: 'Done', toolCalls: [] },
   ]),
-  expectedStatus: 'completed',
-  expectedEvents: ['tool.called', 'tool.succeeded'],
-});
+  {
+    status: 'completed',
+    eventTypes: ['tool.called', 'tool.succeeded'],
+  }
+);
 ```
 
 ## Development

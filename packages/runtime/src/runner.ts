@@ -3,13 +3,14 @@ import {
   AgentEvent,
   AgentState,
   InferenceAdapter,
+  Message,
+  RetryPolicy,
   Run,
   RunStatus,
   ToolContext,
   initialState,
   newId,
 } from '@agentjeff/core';
-import { z } from 'zod';
 import { zodToJsonSchema as _zodToJsonSchema } from 'zod-to-json-schema';
 
 const zodToJsonSchema = _zodToJsonSchema as (schema: unknown) => Record<string, unknown>;
@@ -20,6 +21,21 @@ export interface RunRequest {
   inferenceAdapter: InferenceAdapter;
   onEvent?: (event: AgentEvent) => void;
   checkpointSaver?: (runId: string, state: AgentState) => Promise<void>;
+}
+
+async function withRetry<T>(fn: () => Promise<T>, policy: RetryPolicy): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < policy.maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < policy.maxAttempts - 1) {
+        await new Promise((r) => setTimeout(r, policy.backoffMs));
+      }
+    }
+  }
+  throw lastErr;
 }
 
 export async function executeRun(req: RunRequest): Promise<Run> {
@@ -53,10 +69,11 @@ export async function executeRun(req: RunRequest): Promise<Run> {
 
   const { agent, inferenceAdapter } = req;
   const maxSteps = agent.runtimeOptions?.maxSteps ?? 20;
+  const retryPolicy = agent.runtimeOptions?.retryPolicy;
 
   const toolMap = new Map(agent.tools.map((t) => [t.name, t]));
 
-  const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+  const messages: Message[] = [
     { role: 'system', content: agent.instructions },
     { role: 'user', content: JSON.stringify(req.input) },
   ];
@@ -80,14 +97,24 @@ export async function executeRun(req: RunRequest): Promise<Run> {
       });
 
       if (response.toolCalls.length === 0) {
-        // Final answer
         run.result = response.content;
         break;
       }
 
+      // Record the assistant turn with its tool calls so adapters can send
+      // the full conversation history in the correct format.
+      messages.push({
+        role: 'assistant',
+        content: response.content,
+        toolCalls: response.toolCalls,
+      });
+
       for (const tc of response.toolCalls) {
         const tool = toolMap.get(tc.name);
-        if (!tool) continue;
+        if (!tool) {
+          messages.push({ role: 'tool', toolCallId: tc.id, content: `Unknown tool: ${tc.name}` });
+          continue;
+        }
 
         const toolCtx: ToolContext = {
           runId,
@@ -99,18 +126,16 @@ export async function executeRun(req: RunRequest): Promise<Run> {
 
         try {
           const parsed = tool.inputSchema.parse(tc.arguments);
-          const output = await tool.execute(parsed, toolCtx);
+          const execute = () => tool.execute(parsed, toolCtx);
+          const output = retryPolicy ? await withRetry(execute, retryPolicy) : await execute();
           state.toolOutputs[tc.id] = output;
           emit(mkEvent('tool.succeeded', { tool: tc.name, output }));
-          messages.push({
-            role: 'assistant',
-            content: `Tool ${tc.name} returned: ${JSON.stringify(output)}`,
-          });
+          messages.push({ role: 'tool', toolCallId: tc.id, content: JSON.stringify(output) });
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           state.errors.push({ step: state.currentStep, message: msg });
           emit(mkEvent('tool.failed', { tool: tc.name, error: msg }));
-          messages.push({ role: 'assistant', content: `Tool ${tc.name} failed: ${msg}` });
+          messages.push({ role: 'tool', toolCallId: tc.id, content: `Error: ${msg}` });
         }
       }
 
