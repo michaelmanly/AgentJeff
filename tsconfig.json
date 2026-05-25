@@ -16,7 +16,8 @@
       "@agentjeff/testing": ["packages/testing/src/index.ts"],
       "@agentjeff/adapters": ["packages/adapters/src/index.ts"],
       "@agentjeff/workflow": ["packages/workflow/src/index.ts"],
-      "@agentjeff/packs": ["packages/packs/src/index.ts"]
+      "@agentjeff/packs": ["packages/packs/src/index.ts"],
+      "@agentjeff/examples": ["packages/examples/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*.ts"]

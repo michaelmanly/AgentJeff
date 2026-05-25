@@ -1,0 +1,19 @@
+{
+  "name": "my-basic-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@agentjeff/sdk": "^0.1.0",
+    "zod": "^3.22.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}
