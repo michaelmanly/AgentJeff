@@ -5,6 +5,7 @@
   "scripts": {
     "test": "jest --testPathPattern='packages/runtime/src/__tests__'",
     "test:scenarios": "tsx packages/testing/src/run-scenarios.ts",
+    "test:all": "npm test && npm run test:scenarios",
     "lint": "tsc --noEmit -p tsconfig.json",
     "build": "npm run build --workspaces --if-present",
     "build:watch": "npm run build:watch --workspaces --if-present"

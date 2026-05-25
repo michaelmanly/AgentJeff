@@ -162,6 +162,68 @@ describe('checkpoint', () => {
 // --- 6. tool execution wrapper ---
 
 describe('tool execution wrapper', () => {
+  test('retries failing tool up to maxAttempts', async () => {
+    let attempts = 0;
+    const flaky = defineTool({
+      name: 'flaky',
+      description: 'Fails first two times, succeeds on third',
+      inputSchema: z.object({}),
+      outputSchema: z.object({ ok: z.boolean() }),
+      async execute() {
+        attempts++;
+        if (attempts < 3) throw new Error('transient');
+        return { ok: true };
+      },
+    });
+    const agent = defineAgent({
+      name: 'retry-agent',
+      instructions: 'test',
+      inputSchema: z.object({ x: z.string() }),
+      outputSchema: z.string(),
+      tools: [flaky],
+      runtimeOptions: { retryPolicy: { maxAttempts: 3, backoffMs: 0 } },
+    });
+    const run = await executeRun({
+      agent,
+      input: { x: 'hi' },
+      inferenceAdapter: new MockInferenceAdapter([
+        { content: null, toolCalls: [{ id: 'tc1', name: 'flaky', arguments: {} }] },
+        { content: 'done', toolCalls: [] },
+      ]),
+    });
+    expect(attempts).toBe(3);
+    expect(run.events.some(e => e.type === 'tool.succeeded')).toBe(true);
+    expect(run.events.some(e => e.type === 'tool.failed')).toBe(false);
+  });
+
+  test('emits tool.failed after exhausting all retry attempts', async () => {
+    const alwaysFails = defineTool({
+      name: 'always-fails',
+      description: 'Always throws',
+      inputSchema: z.object({}),
+      outputSchema: z.object({}),
+      async execute() { throw new Error('permanent'); },
+    });
+    const agent = defineAgent({
+      name: 'exhaust-agent',
+      instructions: 'test',
+      inputSchema: z.object({ x: z.string() }),
+      outputSchema: z.string(),
+      tools: [alwaysFails],
+      runtimeOptions: { retryPolicy: { maxAttempts: 2, backoffMs: 0 } },
+    });
+    const run = await executeRun({
+      agent,
+      input: { x: 'hi' },
+      inferenceAdapter: new MockInferenceAdapter([
+        { content: null, toolCalls: [{ id: 'tc1', name: 'always-fails', arguments: {} }] },
+        { content: 'done', toolCalls: [] },
+      ]),
+    });
+    expect(run.events.some(e => e.type === 'tool.failed')).toBe(true);
+    expect(run.status).toBe('completed');
+  });
+
   test('tool input is validated via zod schema', async () => {
     const strictTool = defineTool({
       name: 'strict',

@@ -1,5 +1,11 @@
+export type Message =
+  | { role: 'system'; content: string }
+  | { role: 'user'; content: string }
+  | { role: 'assistant'; content: string | null; toolCalls?: ToolCall[] }
+  | { role: 'tool'; toolCallId: string; content: string };
+
 export interface InferenceRequest {
-  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  messages: Message[];
   tools?: Array<{
     name: string;
     description: string;

@@ -7,8 +7,8 @@ import { extractionAgent } from '@agentjeff/examples';
 const program = new Command();
 
 program
-  .name('newatom')
-  .description('newatom agent runtime CLI')
+  .name('agentjeff')
+  .description('agentjeff agent runtime CLI')
   .version('0.1.0');
 
 program
