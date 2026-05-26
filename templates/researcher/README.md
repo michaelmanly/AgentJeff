@@ -5,7 +5,7 @@ Multi-step research agent that searches, records findings, and writes a report.
 ## Get started
 
 ```bash
-cp .env.example .env    # add BADGR_API_KEY
+cp .env.example .env   # add your BADGR_API_KEY (get one at aibadgr.com)
 npm install
 npm start "your topic here"
 ```

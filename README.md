@@ -9,7 +9,7 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 - **Working run loop** — `executeRun` drives infer → dispatch → update-state → repeat so you don't write it
 - **Typed tools with Zod** — input/output validated at definition time; schema errors surface before the LLM touches them
 - **Full event trace** — every step emits a typed event (`tool.called`, `tool.succeeded`, `state.updated`, `run.completed`) you can stream, log, or assert on
-- **Swappable inference** — built-in adapters for AI Badgr, OpenAI, and Anthropic; mock it entirely for tests
+- **Swappable inference** — `BadgrAdapter` works with any model key on AI Badgr; mock it entirely for tests
 - **Pre-built packs** — workspace assistant and structured extraction agents ready to use or fork
 - **Deterministic tests** — `MockInferenceAdapter` + `runAndAssert` let you test agent behavior without an LLM
 - **CLI** — scaffold a project, run any agent, or stream events from the terminal
@@ -21,7 +21,7 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 | [`@agentjeff/sdk`](packages/sdk) | Main entry point — `defineAgent`, `defineTool`, `run()` |
 | [`@agentjeff/core`](packages/core) | Type definitions: Agent, Tool, Run, State, Adapter, Event, Policy |
 | [`@agentjeff/runtime`](packages/runtime) | Step-execution loop (`executeRun`) |
-| [`@agentjeff/adapters`](packages/adapters) | `BadgrAdapter`, `OpenAIAdapter`, `AnthropicAdapter`, `LocalWorkspaceAdapter` |
+| [`@agentjeff/adapters`](packages/adapters) | `BadgrAdapter` (AI Badgr inference) and `LocalWorkspaceAdapter` (file I/O) |
 | [`@agentjeff/workflow`](packages/workflow) | Step-based multi-stage workflow builder |
 | [`@agentjeff/packs`](packages/packs) | Pre-built workspace assistant and structured extraction packs |
 | [`@agentjeff/testing`](packages/testing) | `MockInferenceAdapter`, `runAndAssert`, scenario runner |
@@ -119,17 +119,17 @@ Or copy from [`templates/`](templates/) directly.
 
 ## Adapters
 
-Swap the LLM with one line:
+`BadgrAdapter` is the default. Bring your own model key on [AI Badgr](https://aibadgr.com) and pick any model:
 
 ```typescript
-import { BadgrAdapter } from '@agentjeff/sdk';              // default (AI Badgr)
-import { OpenAIAdapter, AnthropicAdapter } from '@agentjeff/adapters'; // alternatives
+import { BadgrAdapter } from '@agentjeff/sdk';
 import { MockInferenceAdapter } from '@agentjeff/testing';  // for tests
 
-await executeRun({ agent, input, inferenceAdapter: new AnthropicAdapter() });
+new BadgrAdapter({ model: 'gpt-4o' })
+new BadgrAdapter({ model: 'claude-opus-4-7' })
 ```
 
-See [`docs/adapters.md`](docs/adapters.md) for full options and how to write your own.
+See [`docs/adapters.md`](docs/adapters.md) for options and how to write your own.
 
 ## Examples
 
@@ -223,10 +223,8 @@ npm run lint           # type check
 
 | Variable | Description |
 |---|---|
-| `BADGR_API_KEY` | API key for AI Badgr (default adapter) |
+| `BADGR_API_KEY` | API key for AI Badgr |
 | `BADGR_BASE_URL` | Override base URL (default: `https://aibadgr.com/v1`) |
-| `OPENAI_API_KEY` | API key for OpenAI (when using `OpenAIAdapter`) |
-| `ANTHROPIC_API_KEY` | API key for Anthropic Claude (when using `AnthropicAdapter`) |
 
 ## Contributing
 
