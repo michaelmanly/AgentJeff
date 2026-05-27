@@ -9,10 +9,10 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 - **Working run loop** — `executeRun` drives infer → dispatch → update-state → repeat so you don't write it
 - **Typed tools with Zod** — input/output validated at definition time; schema errors surface before the LLM touches them
 - **Full event trace** — every step emits a typed event (`tool.called`, `tool.succeeded`, `state.updated`, `run.completed`) you can stream, log, or assert on
-- **Swappable inference** — `BadgrAdapter` works against any OpenAI-compatible endpoint; mock it entirely for tests
+- **Swappable inference** — `BadgrAdapter` works with any model key on AI Badgr; mock it entirely for tests
 - **Pre-built packs** — workspace assistant and structured extraction agents ready to use or fork
 - **Deterministic tests** — `MockInferenceAdapter` + `runAndAssert` let you test agent behavior without an LLM
-- **CLI** — run any agent from the terminal without writing code
+- **CLI** — scaffold a project, run any agent, or stream events from the terminal
 
 ## Packages
 
@@ -21,7 +21,7 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 | [`@agentjeff/sdk`](packages/sdk) | Main entry point — `defineAgent`, `defineTool`, `run()` |
 | [`@agentjeff/core`](packages/core) | Type definitions: Agent, Tool, Run, State, Adapter, Event, Policy |
 | [`@agentjeff/runtime`](packages/runtime) | Step-execution loop (`executeRun`) |
-| [`@agentjeff/adapters`](packages/adapters) | `BadgrAdapter` (AI Badgr / OpenAI-compatible) and `LocalWorkspaceAdapter` |
+| [`@agentjeff/adapters`](packages/adapters) | `BadgrAdapter` (AI Badgr inference) and `LocalWorkspaceAdapter` (file I/O) |
 | [`@agentjeff/workflow`](packages/workflow) | Step-based multi-stage workflow builder |
 | [`@agentjeff/packs`](packages/packs) | Pre-built workspace assistant and structured extraction packs |
 | [`@agentjeff/testing`](packages/testing) | `MockInferenceAdapter`, `runAndAssert`, scenario runner |
@@ -30,12 +30,28 @@ Every production AI agent needs the same scaffolding: a run loop that drives LLM
 
 ## Quick Start
 
+### Option A — Use the CLI (fastest)
+
+```bash
+npx @agentjeff/cli init basic-agent
+cd basic-agent
+cp .env.example .env        # add BADGR_API_KEY
+npm install
+npm start
+```
+
+See all templates:
+
+```bash
+npx @agentjeff/cli templates
+```
+
+### Option B — Write it yourself
+
 ```bash
 npm install @agentjeff/sdk zod openai
 export BADGR_API_KEY=your_key_here
 ```
-
-Define an agent and watch the run lifecycle:
 
 ```typescript
 import { z } from 'zod';
@@ -62,17 +78,10 @@ const agent = defineAgent({
 const result = await run(
   agent,
   { content: 'AgentJeff owns the loop. Your tool executes. State updates. Repeat.' },
-  {
-    onEvent: (event) => console.log(`[${event.type}]`, event.payload),
-  },
+  { onEvent: (event) => console.log(`[${event.type}]`, event.payload) },
 );
-// [run.started]    { runId: 'run_abc123', agentName: 'analyst' }
-// [tool.called]    { name: 'summarize', input: { text: '...' } }
-// [tool.succeeded] { name: 'summarize', durationMs: 2 }
-// [state.updated]  { step: 1 }
-// [run.completed]  { steps: 2, durationMs: 583 }
 
-console.log(result.summary);
+console.log(result.result?.summary);
 ```
 
 ## How It Works
@@ -95,11 +104,36 @@ defineAgent + defineTool
       Run { status, result, state, events }
 ```
 
+## Templates
+
+Ready-to-run project starters. Scaffold with the CLI:
+
+```bash
+npx @agentjeff/cli init basic-agent     # minimal single-tool agent
+npx @agentjeff/cli init researcher      # multi-step research + report
+npx @agentjeff/cli init code-reviewer   # reads a workspace, records issues
+npx @agentjeff/cli init data-pipeline   # fetch → validate → transform → store
+```
+
+Or copy from [`templates/`](templates/) directly.
+
+## Adapters
+
+`BadgrAdapter` is the default. Bring your own model key on [AI Badgr](https://aibadgr.com) and pick any model:
+
+```typescript
+import { BadgrAdapter } from '@agentjeff/sdk';
+import { MockInferenceAdapter } from '@agentjeff/testing';  // for tests
+
+new BadgrAdapter({ model: 'gpt-4o' })
+new BadgrAdapter({ model: 'claude-opus-4-7' })
+```
+
+See [`docs/adapters.md`](docs/adapters.md) for options and how to write your own.
+
 ## Examples
 
 ### Workspace Assistant
-
-Reads and summarizes a code repository:
 
 ```typescript
 import { buildWorkspaceAgent } from '@agentjeff/packs';
@@ -116,8 +150,6 @@ console.log(run.result.summary);
 
 ### Structured Extraction
 
-Classifies and extracts fields from raw text:
-
 ```typescript
 import { extractionAgent } from '@agentjeff/packs';
 import { executeRun, BadgrAdapter } from '@agentjeff/sdk';
@@ -127,23 +159,27 @@ const run = await executeRun({
   input: { text: 'Login button broken on mobile Safari — users can\'t sign in.' },
   inferenceAdapter: new BadgrAdapter(),
 });
-console.log(run.result);
 // { category: 'bug_report', priority: 'high', fields: {...}, summary: '...' }
 ```
+
+More examples in [`packages/examples/`](packages/examples/src/).
 
 ## CLI
 
 ```bash
 npx @agentjeff/cli run:workspace ./my-project "List all TypeScript files"
 npx @agentjeff/cli run:extract "Payment fails at checkout for EU users"
+npx @agentjeff/cli run:research "Rust ownership model"
+
+# Scaffold a new project
+npx @agentjeff/cli init basic-agent
+npx @agentjeff/cli templates
 
 # Stream all events
 npx @agentjeff/cli run:workspace ./my-project --events
 ```
 
 ## Testing
-
-Use `MockInferenceAdapter` and `runAndAssert` for deterministic tests that don't hit a real LLM:
 
 ```typescript
 import { MockInferenceAdapter, runAndAssert } from '@agentjeff/testing';
@@ -162,6 +198,14 @@ await runAndAssert(
 );
 ```
 
+## Documentation
+
+| Guide | Description |
+|---|---|
+| [Quickstart](docs/quickstart.md) | From zero to a running agent in 5 minutes |
+| [Debugging](docs/debugging.md) | Events, state, testing, common failures |
+| [Adapters](docs/adapters.md) | OpenAI, Anthropic, custom providers |
+
 ## Development
 
 ```bash
@@ -179,8 +223,8 @@ npm run lint           # type check
 
 | Variable | Description |
 |---|---|
-| `BADGR_API_KEY` | API key for AI Badgr inference |
-| `BADGR_BASE_URL` | Override the AI Badgr base URL (default: `https://aibadgr.com/v1`) |
+| `BADGR_API_KEY` | API key for AI Badgr |
+| `BADGR_BASE_URL` | Override base URL (default: `https://aibadgr.com/v1`) |
 
 ## Contributing
 

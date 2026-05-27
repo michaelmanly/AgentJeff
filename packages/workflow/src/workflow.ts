@@ -28,11 +28,15 @@ export class Workflow<TState extends Record<string, unknown>> {
 
   async run(
     initialState: TState,
-    ctx: { runId: string; emit: (e: AgentEvent) => void }
+    ctx?: { runId?: string; emit?: (e: AgentEvent) => void }
   ): Promise<TState> {
+    const resolvedCtx: StepContext = {
+      runId: ctx?.runId ?? `wf_${Date.now()}`,
+      emit: ctx?.emit ?? (() => undefined),
+    };
     let state = { ...initialState };
     for (const step of this.steps) {
-      const patch = await step.fn(state, ctx);
+      const patch = await step.fn(state, resolvedCtx);
       state = { ...state, ...patch };
     }
     return state;
