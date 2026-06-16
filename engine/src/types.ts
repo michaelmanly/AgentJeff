@@ -1,20 +1,11 @@
 export type EngineStatus = 'idle' | 'running' | 'paused' | 'stopped';
-
-export type ScenarioType =
-  | 'edge-case'
-  | 'regression'
-  | 'performance'
-  | 'flaky-test'
-  | 'adversarial-review'
-  | 'missing-test'
-  | 'unsafe-change'
-  | 'benchmark-degradation';
+export type ScenarioType = 'edge-case' | 'regression' | 'performance' | 'flaky-test' | 'adversarial-review' | 'missing-test' | 'unsafe-change' | 'benchmark-degradation';
 
 export interface Message {
   role: 'system' | 'user' | 'assistant' | 'tool';
-  content: string | null;
-  toolCalls?: ToolCall[];
+  content: string;
   toolCallId?: string;
+  name?: string;
 }
 
 export interface ToolCall {
@@ -46,7 +37,6 @@ export interface Objective {
   description: string;
   type: ScenarioType;
   priority: number;
-  targetFile?: string;
   createdAt: number;
 }
 
@@ -107,7 +97,6 @@ export interface AttemptRecord {
   metrics: AttemptMetrics;
   timestamp: number;
   strategy: string;
-  workerIndex?: number;
 }
 
 export interface StrategyRecord {
@@ -137,7 +126,7 @@ export interface ScenarioRecord {
 export interface EngineMetrics {
   iterations: number;
   failures: number;
-  avgCycleTimeMs: number;
+  avgCycleTime: number;
   scoreTrend: number[];
   repeatedMistakes: number;
   builderChangesAttempted: number;
@@ -162,41 +151,30 @@ export interface RepoObservation {
   files: string[];
   gitStatus: string;
   recentCommits: string[];
-  testResults?: TestRunResult;
+  fileContents: Record<string, string>;
 }
 
-export interface TestRunResult {
-  passed: number;
-  failed: number;
-  total: number;
-  duration: number;
+export interface TestResult {
+  passed: boolean;
+  testsRun: number;
+  testsPassed: number;
+  testsFailed: number;
   output: string;
+  duration: number;
+  timestamp: number;
+}
+
+export interface LintResult {
+  passed: boolean;
+  errors: number;
+  output: string;
+  duration: number;
 }
 
 export interface EngineState {
   status: EngineStatus;
   pid: number;
-  iteration: number;
   startedAt: number;
+  iterations: number;
   lastCycleAt: number;
-  metrics: EngineMetrics;
-}
-
-export interface OllamaSettings {
-  baseUrl: string;
-  primaryModel: string;
-  fastModel: string;
-  temperature: number;
-  maxTokens: number;
-}
-
-export interface EngineSettings {
-  cycleDelayMs: number;
-  maxConcurrentWorkers: number;
-  improvementIntervalIterations: number;
-  maxAttemptsToReview: number;
-  sandboxRepoPath: string;
-  primaryModel: string;
-  fastModel: string;
-  defaultStrategy: string;
 }
