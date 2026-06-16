@@ -1,0 +1,20 @@
+{
+  "name": "@agentjeff/engine",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts start",
+    "pause": "tsx src/main.ts pause",
+    "stop": "tsx src/main.ts stop",
+    "resume": "tsx src/main.ts resume",
+    "metrics": "tsx src/main.ts metrics",
+    "test": "cd targets/sandbox-repo && npm test",
+    "setup": "npm install && cd targets/sandbox-repo && npm install"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

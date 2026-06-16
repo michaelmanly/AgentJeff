@@ -1,0 +1,10 @@
+{
+  "cycleDelayMs": 5000,
+  "maxConcurrentWorkers": 3,
+  "improvementIntervalIterations": 10,
+  "maxAttemptsToReview": 50,
+  "sandboxRepoPath": "../targets/sandbox-repo",
+  "primaryModel": "qwen2.5-coder:14b",
+  "fastModel": "qwen2.5-coder:7b",
+  "defaultStrategy": "balanced"
+}

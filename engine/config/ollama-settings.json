@@ -1,0 +1,7 @@
+{
+  "baseUrl": "http://localhost:11434",
+  "primaryModel": "qwen2.5-coder:14b",
+  "fastModel": "qwen2.5-coder:7b",
+  "temperature": 0.3,
+  "maxTokens": 2048
+}

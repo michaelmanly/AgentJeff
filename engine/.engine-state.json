@@ -1,0 +1,36 @@
+{
+  "status": "stopped",
+  "pid": 10457,
+  "iteration": 5,
+  "startedAt": 1781590184876,
+  "lastCycleAt": 1781590209201,
+  "metrics": {
+    "iterations": 5,
+    "failures": 5,
+    "avgCycleTimeMs": 9,
+    "scoreTrend": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "repeatedMistakes": 0,
+    "builderChangesAttempted": 5,
+    "builderChangesAccepted": 0,
+    "builderChangesReverted": 5,
+    "builderRegressionRate": 0,
+    "criticCorrectWarnings": 0,
+    "criticMisses": 0,
+    "criticFalseAlarms": 0,
+    "scenarioNovelty": 0,
+    "scenarioIssueDiscoveryRate": 0,
+    "scenarioDuplicateRate": 0,
+    "verifierChecksRun": 0,
+    "verifierFailureCatchRate": 0,
+    "verifierNoisyFailures": 0,
+    "improvementVariantsTested": 0,
+    "improvementWinRate": 0,
+    "improvementGainOverBaseline": 0
+  }
+}

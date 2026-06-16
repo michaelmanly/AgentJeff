@@ -1,0 +1,6 @@
+{
+  "allowedPaths": ["../targets/sandbox-repo"],
+  "allowExec": true,
+  "allowedCommands": ["npm test", "npx tsc", "git diff", "git status", "git log"],
+  "forbiddenPatterns": ["rm -rf", "eval(", "exec(", "DROP TABLE", "DELETE FROM"]
+}

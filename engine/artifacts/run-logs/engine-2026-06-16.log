@@ -1,0 +1,107 @@
+[2026-06-16T06:08:32.906Z] [INFO] Starting engine...
+[2026-06-16T06:08:32.965Z] [WARN] Ollama not available — using fallback rule-based adapter
+[2026-06-16T06:08:32.968Z] [INFO] Initialized default strategies
+[2026-06-16T06:08:32.973Z] [INFO] Verifier baseline set {"passed":0,"total":0}
+[2026-06-16T06:08:32.974Z] [INFO] Engine started
+[2026-06-16T06:08:32.979Z] [DEBUG] Worker 0 generating edge-case scenario
+[2026-06-16T06:08:32.980Z] [DEBUG] Worker 1 generating missing-test scenario
+[2026-06-16T06:08:32.980Z] [DEBUG] Worker 2 generating regression scenario
+[2026-06-16T06:08:32.983Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:08:32.984Z] [INFO] [Iter 1] Objective: edge-case - Find and fix edge-case issues in the sandbox repo
+[2026-06-16T06:08:32.985Z] [WARN] [Iter 1] Critique rejected: 
+[2026-06-16T06:08:38.006Z] [DEBUG] Worker 0 generating missing-test scenario
+[2026-06-16T06:08:38.006Z] [DEBUG] Worker 1 generating regression scenario
+[2026-06-16T06:08:38.006Z] [DEBUG] Worker 2 generating adversarial-review scenario
+[2026-06-16T06:08:38.009Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:08:38.010Z] [INFO] [Iter 2] Objective: regression - Find and fix regression issues in the sandbox repo
+[2026-06-16T06:08:38.010Z] [WARN] [Iter 2] Critique rejected: 
+[2026-06-16T06:08:43.019Z] [DEBUG] Worker 0 generating regression scenario
+[2026-06-16T06:08:43.019Z] [DEBUG] Worker 1 generating adversarial-review scenario
+[2026-06-16T06:08:43.020Z] [DEBUG] Worker 2 generating performance scenario
+[2026-06-16T06:08:43.021Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:08:43.022Z] [INFO] [Iter 3] Objective: performance - Find and fix performance issues in the sandbox repo
+[2026-06-16T06:08:43.022Z] [WARN] [Iter 3] Critique rejected: 
+[2026-06-16T06:08:48.036Z] [DEBUG] Worker 0 generating adversarial-review scenario
+[2026-06-16T06:08:48.036Z] [DEBUG] Worker 1 generating performance scenario
+[2026-06-16T06:08:48.036Z] [DEBUG] Worker 2 generating edge-case scenario
+[2026-06-16T06:08:48.038Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:08:48.039Z] [INFO] [Iter 4] Objective: missing-test - Find and fix missing-test issues in the sandbox repo
+[2026-06-16T06:08:48.040Z] [WARN] [Iter 4] Critique rejected: 
+[2026-06-16T06:08:52.321Z] [INFO] Engine stopped at iteration 4
+[2026-06-16T06:09:09.547Z] [INFO] Starting engine...
+[2026-06-16T06:09:09.616Z] [WARN] Ollama not available — using fallback rule-based adapter
+[2026-06-16T06:09:09.622Z] [INFO] Verifier baseline set {"passed":0,"total":0}
+[2026-06-16T06:09:09.624Z] [INFO] Engine started
+[2026-06-16T06:09:09.629Z] [DEBUG] Worker 0 generating edge-case scenario
+[2026-06-16T06:09:09.629Z] [DEBUG] Worker 1 generating missing-test scenario
+[2026-06-16T06:09:09.629Z] [DEBUG] Worker 2 generating regression scenario
+[2026-06-16T06:09:09.632Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:09.633Z] [INFO] [Iter 1] Objective: edge-case - Find and fix edge-case issues in the sandbox repo
+[2026-06-16T06:09:09.634Z] [WARN] [Iter 1] Critique rejected: 
+[2026-06-16T06:09:14.644Z] [DEBUG] Worker 0 generating missing-test scenario
+[2026-06-16T06:09:14.644Z] [DEBUG] Worker 1 generating regression scenario
+[2026-06-16T06:09:14.644Z] [DEBUG] Worker 2 generating adversarial-review scenario
+[2026-06-16T06:09:14.647Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:14.648Z] [INFO] [Iter 2] Objective: regression - Find and fix regression issues in the sandbox repo
+[2026-06-16T06:09:14.648Z] [WARN] [Iter 2] Critique rejected: 
+[2026-06-16T06:09:19.658Z] [DEBUG] Worker 0 generating regression scenario
+[2026-06-16T06:09:19.658Z] [DEBUG] Worker 1 generating adversarial-review scenario
+[2026-06-16T06:09:19.658Z] [DEBUG] Worker 2 generating performance scenario
+[2026-06-16T06:09:19.660Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:19.661Z] [INFO] [Iter 3] Objective: performance - Find and fix performance issues in the sandbox repo
+[2026-06-16T06:09:19.662Z] [WARN] [Iter 3] Critique rejected: 
+[2026-06-16T06:09:24.676Z] [DEBUG] Worker 0 generating adversarial-review scenario
+[2026-06-16T06:09:24.676Z] [DEBUG] Worker 1 generating performance scenario
+[2026-06-16T06:09:24.676Z] [DEBUG] Worker 2 generating edge-case scenario
+[2026-06-16T06:09:24.678Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:24.679Z] [INFO] [Iter 4] Objective: missing-test - Find and fix missing-test issues in the sandbox repo
+[2026-06-16T06:09:24.679Z] [WARN] [Iter 4] Critique rejected: 
+[2026-06-16T06:09:29.692Z] [DEBUG] Worker 0 generating performance scenario
+[2026-06-16T06:09:29.692Z] [DEBUG] Worker 1 generating edge-case scenario
+[2026-06-16T06:09:29.692Z] [DEBUG] Worker 2 generating missing-test scenario
+[2026-06-16T06:09:29.694Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:29.694Z] [INFO] [Iter 5] Objective: adversarial-review - Find and fix adversarial-review issues in the sandbox repo
+[2026-06-16T06:09:29.695Z] [WARN] [Iter 5] Critique rejected: 
+[2026-06-16T06:09:34.706Z] [DEBUG] Worker 0 generating edge-case scenario
+[2026-06-16T06:09:34.706Z] [DEBUG] Worker 1 generating missing-test scenario
+[2026-06-16T06:09:34.706Z] [DEBUG] Worker 2 generating regression scenario
+[2026-06-16T06:09:34.707Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:34.708Z] [INFO] [Iter 6] Objective: unsafe-change - Find and fix unsafe-change issues in the sandbox repo
+[2026-06-16T06:09:34.708Z] [WARN] [Iter 6] Critique rejected: 
+[2026-06-16T06:09:38.878Z] [INFO] Engine stopped at iteration 6
+[2026-06-16T06:09:44.875Z] [INFO] Starting engine...
+[2026-06-16T06:09:44.932Z] [WARN] Ollama not available — using fallback rule-based adapter
+[2026-06-16T06:09:44.938Z] [INFO] Verifier baseline set {"passed":0,"total":0}
+[2026-06-16T06:09:44.939Z] [INFO] Engine started
+[2026-06-16T06:09:44.946Z] [DEBUG] Worker 0 generating edge-case scenario
+[2026-06-16T06:09:44.946Z] [DEBUG] Worker 1 generating missing-test scenario
+[2026-06-16T06:09:44.946Z] [DEBUG] Worker 2 generating regression scenario
+[2026-06-16T06:09:44.949Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:44.950Z] [INFO] [Iter 1] Objective: edge-case - Find and fix edge-case issues in the sandbox repo
+[2026-06-16T06:09:44.951Z] [WARN] [Iter 1] Critique rejected: 
+[2026-06-16T06:09:49.962Z] [DEBUG] Worker 0 generating missing-test scenario
+[2026-06-16T06:09:49.962Z] [DEBUG] Worker 1 generating regression scenario
+[2026-06-16T06:09:49.962Z] [DEBUG] Worker 2 generating adversarial-review scenario
+[2026-06-16T06:09:49.965Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:49.966Z] [INFO] [Iter 2] Objective: regression - Find and fix regression issues in the sandbox repo
+[2026-06-16T06:09:49.966Z] [WARN] [Iter 2] Critique rejected: 
+[2026-06-16T06:09:54.975Z] [DEBUG] Worker 0 generating regression scenario
+[2026-06-16T06:09:54.975Z] [DEBUG] Worker 1 generating adversarial-review scenario
+[2026-06-16T06:09:54.975Z] [DEBUG] Worker 2 generating performance scenario
+[2026-06-16T06:09:54.977Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:54.978Z] [INFO] [Iter 3] Objective: performance - Find and fix performance issues in the sandbox repo
+[2026-06-16T06:09:54.978Z] [WARN] [Iter 3] Critique rejected: 
+[2026-06-16T06:09:59.990Z] [DEBUG] Worker 0 generating adversarial-review scenario
+[2026-06-16T06:09:59.991Z] [DEBUG] Worker 1 generating performance scenario
+[2026-06-16T06:09:59.991Z] [DEBUG] Worker 2 generating edge-case scenario
+[2026-06-16T06:09:59.992Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:09:59.993Z] [INFO] [Iter 4] Objective: missing-test - Find and fix missing-test issues in the sandbox repo
+[2026-06-16T06:09:59.993Z] [WARN] [Iter 4] Critique rejected: 
+[2026-06-16T06:10:05.003Z] [DEBUG] Worker 0 generating performance scenario
+[2026-06-16T06:10:05.003Z] [DEBUG] Worker 1 generating edge-case scenario
+[2026-06-16T06:10:05.004Z] [DEBUG] Worker 2 generating missing-test scenario
+[2026-06-16T06:10:05.005Z] [DEBUG] Workers done: 3 results, avgScore=0.0
+[2026-06-16T06:10:05.006Z] [INFO] [Iter 5] Objective: adversarial-review - Find and fix adversarial-review issues in the sandbox repo
+[2026-06-16T06:10:05.006Z] [WARN] [Iter 5] Critique rejected: 
+[2026-06-16T06:10:09.201Z] [INFO] Engine stopped at iteration 5
+[2026-06-16T06:10:09.204Z] [INFO] Report saved: /home/user/AgentJeff/engine/artifacts/reports/report-1781590209203.md

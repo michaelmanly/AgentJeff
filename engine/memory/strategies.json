@@ -1,0 +1,42 @@
+[
+  {
+    "id": "strategy-balanced",
+    "name": "balanced",
+    "description": "Equal weight across all scenario types",
+    "promptStyle": "detailed",
+    "scenarioWeights": {
+      "edge-case": 2,
+      "regression": 2,
+      "performance": 1,
+      "flaky-test": 1,
+      "adversarial-review": 1,
+      "missing-test": 2,
+      "unsafe-change": 1,
+      "benchmark-degradation": 1
+    },
+    "avgScore": 0,
+    "usageCount": 0,
+    "winRate": 0,
+    "lastUsed": 0
+  },
+  {
+    "id": "strategy-aggressive",
+    "name": "aggressive",
+    "description": "Focus on edge cases and regressions",
+    "promptStyle": "concise",
+    "scenarioWeights": {
+      "edge-case": 4,
+      "regression": 4,
+      "performance": 1,
+      "flaky-test": 1,
+      "adversarial-review": 1,
+      "missing-test": 2,
+      "unsafe-change": 1,
+      "benchmark-degradation": 1
+    },
+    "avgScore": 0,
+    "usageCount": 0,
+    "winRate": 0,
+    "lastUsed": 0
+  }
+]
