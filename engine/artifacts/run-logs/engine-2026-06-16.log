@@ -105,3 +105,43 @@
 [2026-06-16T06:10:05.006Z] [WARN] [Iter 5] Critique rejected: 
 [2026-06-16T06:10:09.201Z] [INFO] Engine stopped at iteration 5
 [2026-06-16T06:10:09.204Z] [INFO] Report saved: /home/user/AgentJeff/engine/artifacts/reports/report-1781590209203.md
+[2026-06-16T08:33:19.607Z] [INFO] [Engine] Engine starting...
+[2026-06-16T08:33:19.660Z] [WARN] [Engine] Ollama model qwen2.5-coder:14b not available, will use fallback planning
+[2026-06-16T08:33:19.660Z] [INFO] [Engine] Engine started, entering environment loop
+[2026-06-16T08:33:19.660Z] [INFO] [EnvironmentLoop] Environment loop starting
+[2026-06-16T08:33:19.661Z] [INFO] [EnvironmentLoop] Starting cycle 0
+[2026-06-16T08:33:19.695Z] [WARN] [Planner] Planner failed, using fallback {}
+[2026-06-16T08:33:19.695Z] [INFO] [EnvironmentLoop] Objective: [edge-case] Find and address edge-case issues in the sandbox repository
+[2026-06-16T08:33:19.696Z] [WARN] [Builder] Builder failed, generating minimal proposal {}
+[2026-06-16T08:33:19.697Z] [INFO] [EnvironmentLoop] Proposal: Minimal proposal for: Find and address edge-case issues in the sandbox repository (0 changes)
+[2026-06-16T08:33:19.697Z] [INFO] [EnvironmentLoop] Critique: APPROVED
+[2026-06-16T08:33:19.697Z] [INFO] [Verifier] Verifying proposal prop-mqgdxbv5-f05d8397b4c03fbe
+[2026-06-16T08:33:19.697Z] [INFO] [EnvironmentLoop] Verification: PASSED
+[2026-06-16T08:33:19.697Z] [DEBUG] [Scorer] Score: 65 {"verification_passed":40,"critic_approved":15,"no_regressions":10,"final":65}
+[2026-06-16T08:33:19.697Z] [INFO] [EnvironmentLoop] Score: 65
+[2026-06-16T08:33:19.698Z] [INFO] [MemoryManager] Saved attempt attempt-mqgdxbv5-93dca2d7e67b82fb with score 65
+[2026-06-16T08:33:24.703Z] [INFO] [EnvironmentLoop] Starting cycle 1
+[2026-06-16T08:33:24.731Z] [WARN] [Planner] Planner failed, using fallback {}
+[2026-06-16T08:33:24.732Z] [INFO] [EnvironmentLoop] Objective: [regression] Find and address regression issues in the sandbox repository
+[2026-06-16T08:33:24.734Z] [WARN] [Builder] Builder failed, generating minimal proposal {}
+[2026-06-16T08:33:24.734Z] [INFO] [EnvironmentLoop] Proposal: Minimal proposal for: Find and address regression issues in the sandbox repository (0 changes)
+[2026-06-16T08:33:24.734Z] [INFO] [EnvironmentLoop] Critique: APPROVED
+[2026-06-16T08:33:24.734Z] [INFO] [Verifier] Verifying proposal prop-mqgdxfr2-a5c93f6e6469963d
+[2026-06-16T08:33:24.734Z] [INFO] [EnvironmentLoop] Verification: PASSED
+[2026-06-16T08:33:24.734Z] [DEBUG] [Scorer] Score: 65 {"verification_passed":40,"critic_approved":15,"no_regressions":10,"final":65}
+[2026-06-16T08:33:24.734Z] [INFO] [EnvironmentLoop] Score: 65
+[2026-06-16T08:33:24.734Z] [INFO] [MemoryManager] Saved attempt attempt-mqgdxfr2-f62f7cc179fdef2b with score 65
+[2026-06-16T08:33:29.737Z] [INFO] [EnvironmentLoop] Starting cycle 2
+[2026-06-16T08:33:29.744Z] [WARN] [Planner] Planner failed, using fallback {}
+[2026-06-16T08:33:29.744Z] [INFO] [EnvironmentLoop] Objective: [performance] Find and address performance issues in the sandbox repository
+[2026-06-16T08:33:29.745Z] [WARN] [Builder] Builder failed, generating minimal proposal {}
+[2026-06-16T08:33:29.745Z] [INFO] [EnvironmentLoop] Proposal: Minimal proposal for: Find and address performance issues in the sandbox repository (0 changes)
+[2026-06-16T08:33:29.745Z] [INFO] [EnvironmentLoop] Critique: APPROVED
+[2026-06-16T08:33:29.745Z] [INFO] [Verifier] Verifying proposal prop-mqgdxjm9-ec85d6fb673353da
+[2026-06-16T08:33:29.745Z] [INFO] [EnvironmentLoop] Verification: PASSED
+[2026-06-16T08:33:29.745Z] [DEBUG] [Scorer] Score: 65 {"verification_passed":40,"critic_approved":15,"no_regressions":10,"final":65}
+[2026-06-16T08:33:29.746Z] [INFO] [EnvironmentLoop] Score: 65
+[2026-06-16T08:33:29.746Z] [INFO] [MemoryManager] Saved attempt attempt-mqgdxjma-0069ceb9e3a3f197 with score 65
+[2026-06-16T08:33:30.266Z] [INFO] [Engine] Shutdown signal received
+[2026-06-16T08:33:30.266Z] [INFO] [EnvironmentLoop] Loop stop requested
+[2026-06-16T08:33:30.266Z] [INFO] [Engine] Engine stopped

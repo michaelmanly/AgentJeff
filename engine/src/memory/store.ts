@@ -1,67 +1,83 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { AttemptRecord, StrategyRecord, ScenarioRecord } from '../types.js';
+import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
+import type { AttemptRecord, StrategyRecord, ScenarioRecord } from '../types.js';
 
-const MEMORY_DIR = path.join(process.cwd(), 'memory');
-
-async function ensureMemoryDir() {
-  await fs.mkdir(MEMORY_DIR, { recursive: true });
-}
-
-async function readJsonFile<T>(filename: string, defaultValue: T): Promise<T> {
-  await ensureMemoryDir();
-  try {
-    const content = await fs.readFile(path.join(MEMORY_DIR, filename), 'utf-8');
-    return JSON.parse(content) as T;
-  } catch {
-    return defaultValue;
+function ensureDir(filePath: string) {
+  const dir = dirname(filePath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
   }
 }
 
-async function writeJsonFile(filename: string, data: unknown): Promise<void> {
-  await ensureMemoryDir();
-  await fs.writeFile(path.join(MEMORY_DIR, filename), JSON.stringify(data, null, 2), 'utf-8');
+function ensureFile(filePath: string, defaultContent: string = '') {
+  ensureDir(filePath);
+  if (!existsSync(filePath)) {
+    writeFileSync(filePath, defaultContent, 'utf-8');
+  }
 }
 
-export async function appendAttempt(record: AttemptRecord): Promise<void> {
-  await ensureMemoryDir();
-  const line = JSON.stringify(record) + '\n';
-  await fs.appendFile(path.join(MEMORY_DIR, 'attempts.jsonl'), line, 'utf-8');
-}
+export class MemoryStore {
+  constructor(
+    private attemptsFile: string,
+    private strategiesFile: string,
+    private scenariosFile: string,
+    private scoresFile: string,
+  ) {
+    ensureFile(attemptsFile, '');
+    ensureFile(strategiesFile, '[]');
+    ensureFile(scenariosFile, '[]');
+    ensureFile(scoresFile, '[]');
+  }
 
-export async function readAttempts(limit = 100): Promise<AttemptRecord[]> {
-  await ensureMemoryDir();
-  try {
-    const content = await fs.readFile(path.join(MEMORY_DIR, 'attempts.jsonl'), 'utf-8');
+  async appendAttempt(record: AttemptRecord): Promise<void> {
+    ensureFile(this.attemptsFile, '');
+    appendFileSync(this.attemptsFile, JSON.stringify(record) + '\n', 'utf-8');
+  }
+
+  async readAttempts(limit?: number): Promise<AttemptRecord[]> {
+    if (!existsSync(this.attemptsFile)) return [];
+    const content = readFileSync(this.attemptsFile, 'utf-8');
     const lines = content.split('\n').filter(Boolean);
-    return lines.slice(-limit).map((l) => JSON.parse(l) as AttemptRecord);
-  } catch {
-    return [];
+    const records = lines.map(line => {
+      try { return JSON.parse(line) as AttemptRecord; } catch { return null; }
+    }).filter(Boolean) as AttemptRecord[];
+    return limit ? records.slice(-limit) : records;
   }
-}
 
-export async function loadStrategies(): Promise<StrategyRecord[]> {
-  return readJsonFile<StrategyRecord[]>('strategies.json', []);
-}
+  async loadStrategies(): Promise<StrategyRecord[]> {
+    if (!existsSync(this.strategiesFile)) return [];
+    try {
+      return JSON.parse(readFileSync(this.strategiesFile, 'utf-8')) as StrategyRecord[];
+    } catch { return []; }
+  }
 
-export async function saveStrategies(strategies: StrategyRecord[]): Promise<void> {
-  return writeJsonFile('strategies.json', strategies);
-}
+  async saveStrategies(strategies: StrategyRecord[]): Promise<void> {
+    ensureFile(this.strategiesFile, '[]');
+    writeFileSync(this.strategiesFile, JSON.stringify(strategies, null, 2), 'utf-8');
+  }
 
-export async function loadScenarios(): Promise<ScenarioRecord[]> {
-  return readJsonFile<ScenarioRecord[]>('scenarios.json', []);
-}
+  async loadScenarios(): Promise<ScenarioRecord[]> {
+    if (!existsSync(this.scenariosFile)) return [];
+    try {
+      return JSON.parse(readFileSync(this.scenariosFile, 'utf-8')) as ScenarioRecord[];
+    } catch { return []; }
+  }
 
-export async function saveScenarios(scenarios: ScenarioRecord[]): Promise<void> {
-  return writeJsonFile('scenarios.json', scenarios);
-}
+  async saveScenarios(scenarios: ScenarioRecord[]): Promise<void> {
+    ensureFile(this.scenariosFile, '[]');
+    writeFileSync(this.scenariosFile, JSON.stringify(scenarios, null, 2), 'utf-8');
+  }
 
-export async function loadScores(): Promise<number[]> {
-  return readJsonFile<number[]>('scores.json', []);
-}
+  async loadScores(): Promise<number[]> {
+    if (!existsSync(this.scoresFile)) return [];
+    try {
+      return JSON.parse(readFileSync(this.scoresFile, 'utf-8')) as number[];
+    } catch { return []; }
+  }
 
-export async function appendScore(score: number): Promise<void> {
-  const scores = await loadScores();
-  scores.push(score);
-  await writeJsonFile('scores.json', scores.slice(-200)); // keep last 200
+  async appendScore(score: number): Promise<void> {
+    const scores = await this.loadScores();
+    scores.push(score);
+    writeFileSync(this.scoresFile, JSON.stringify(scores), 'utf-8');
+  }
 }

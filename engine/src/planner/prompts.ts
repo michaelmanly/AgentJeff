@@ -1,116 +1,48 @@
-import { RepoObservation, AttemptRecord, StrategyRecord, ScenarioType } from '../types.js';
+import type { RepoObservation, AttemptRecord, StrategyRecord } from '../types.js';
 
-export function buildObjectivePrompt(
+export function buildPlannerPrompt(
   observation: RepoObservation,
   recentAttempts: AttemptRecord[],
-  strategy: StrategyRecord | null
+  strategy: StrategyRecord | null,
 ): string {
-  const recentSummary = recentAttempts.slice(-5).map((a) => ({
-    type: a.scenarioType,
-    score: a.score,
-    passed: a.verification.passed,
-  }));
+  const recentScores = recentAttempts.slice(-5).map(a => a.score).join(', ');
+  const recentTypes = recentAttempts.slice(-5).map(a => a.scenarioType).join(', ');
+  
+  const filesSummary = Object.entries(observation.fileContents)
+    .slice(0, 5)
+    .map(([path, content]) => `File: ${path}\n${content.slice(0, 500)}`)
+    .join('\n---\n');
 
-  const weights = strategy?.scenarioWeights ?? {};
-  const weightedTypes = Object.entries(weights)
-    .sort(([, a], [, b]) => (b as number) - (a as number))
-    .map(([type, w]) => `${type}(weight:${w})`)
-    .join(', ');
+  return `You are an autonomous engineering engine planner. Your job is to choose the next objective.
 
-  return `You are an autonomous engineering engine choosing the next testing objective.
+## Repository State
+Files: ${observation.files.join(', ')}
+Git Status: ${observation.gitStatus}
 
-Current repo state:
-- Files: ${observation.files.join(', ')}
-- Git status: ${observation.gitStatus || 'clean'}
-- Recent commits: ${observation.recentCommits.join(', ') || 'none'}
+## Source Code (sample)
+${filesSummary}
 
-Recent attempts (last 5):
-${JSON.stringify(recentSummary, null, 2)}
+## Recent Performance
+Recent scores: ${recentScores || 'none yet'}
+Recent scenario types: ${recentTypes || 'none yet'}
+Current strategy: ${strategy?.name ?? 'balanced'}
 
-Strategy weights: ${weightedTypes}
+## Instructions
+Choose the single most valuable next objective from these types:
+- edge-case: Find and handle edge cases in existing code
+- regression: Prevent regressions in functionality  
+- performance: Improve performance characteristics
+- flaky-test: Fix or identify flaky tests
+- adversarial-review: Review code for security/correctness issues
+- missing-test: Add missing test coverage
+- unsafe-change: Identify unsafe code patterns
+- benchmark-degradation: Track and prevent benchmark degradation
 
-Choose the single most valuable next objective. Return ONLY valid JSON matching this schema:
+Respond with ONLY a JSON object:
 {
-  "id": "obj-<timestamp>",
-  "description": "specific description of what to find or fix",
-  "type": "<one of: edge-case|regression|performance|flaky-test|adversarial-review|missing-test|unsafe-change|benchmark-degradation>",
+  "type": "<scenario-type>",
+  "description": "<specific description of what to do>",
   "priority": <1-10>,
-  "targetFile": "src/filename.ts",
-  "createdAt": <unix timestamp ms>
-}
-
-Prefer scenario types with higher weights and those not recently attempted. Return only the JSON object.`;
-}
-
-export function buildProposalPrompt(
-  objective: { description: string; type: ScenarioType; targetFile?: string },
-  fileContents: Record<string, string>
-): string {
-  const filesSection = Object.entries(fileContents)
-    .map(([path, content]) => `=== ${path} ===\n${content}`)
-    .join('\n\n');
-
-  return `You are a code engineer generating a minimal code change or test to achieve an objective.
-
-Objective: ${objective.description}
-Type: ${objective.type}
-Target: ${objective.targetFile ?? 'any relevant file'}
-
-Current code:
-${filesSection}
-
-Generate a MINIMAL, targeted change. For test objectives, add a test. For bug fixes, fix the bug. For edge cases, add handling.
-
-Return ONLY valid JSON:
-{
-  "description": "what this change does",
-  "changes": [
-    {
-      "path": "relative/path/to/file.ts",
-      "content": "FULL file content after change"
-    }
-  ],
-  "rationale": "why this change achieves the objective"
-}
-
-Rules:
-- changes[].content must be the COMPLETE file, not a diff
-- Make the smallest change that achieves the objective
-- Do not introduce new dependencies
-- Return only the JSON object`;
-}
-
-export function buildCritiquePrompt(
-  proposal: { description: string; rationale: string; changes: Array<{ path: string; content: string }> }
-): string {
-  const changesSummary = proposal.changes.map((c) => ({
-    path: c.path,
-    lines: c.content.split('\n').length,
-    preview: c.content.split('\n').slice(0, 10).join('\n'),
-  }));
-
-  return `You are a critical code reviewer. Review this proposed change for correctness and safety.
-
-Proposal: ${proposal.description}
-Rationale: ${proposal.rationale}
-
-Changes:
-${JSON.stringify(changesSummary, null, 2)}
-
-Check for:
-1. Logic errors or incorrect fixes
-2. Regressions (does it break existing behavior?)
-3. Unsafe patterns (eval, arbitrary exec, path traversal, etc.)
-4. Incomplete implementation
-5. Style inconsistencies
-
-Return ONLY valid JSON:
-{
-  "approved": true/false,
-  "warnings": ["list of warnings"],
-  "risks": ["list of risks"],
-  "suggestions": ["improvement suggestions"]
-}
-
-Approve if the change is correct and safe, even if not perfect. Reject only for serious issues.`;
+  "rationale": "<why this is most valuable now>"
+}`;
 }

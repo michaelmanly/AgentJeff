@@ -1,27 +1,29 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { readdirSync, readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { createLogger } from '../../utils/logger.js';
 
-export class LogAdapter {
-  private logDir: string;
+const logger = createLogger('LogsAdapter');
 
-  constructor(logDir: string) {
-    this.logDir = path.resolve(logDir);
-  }
+export class LogsAdapter {
+  constructor(private logsDir: string) {}
 
-  async readLatest(n = 100): Promise<string[]> {
+  readLatestLog(): string {
+    if (!existsSync(this.logsDir)) return '';
     try {
-      const files = await fs.readdir(this.logDir);
-      const logFiles = files.filter((f) => f.endsWith('.log')).sort().reverse();
-      if (!logFiles.length) return [];
-      const content = await fs.readFile(path.join(this.logDir, logFiles[0]), 'utf-8');
-      return content.split('\n').filter(Boolean).slice(-n);
+      const files = readdirSync(this.logsDir)
+        .filter(f => f.endsWith('.log'))
+        .sort()
+        .reverse();
+      if (files.length === 0) return '';
+      return readFileSync(join(this.logsDir, files[0]), 'utf-8');
     } catch {
-      return [];
+      return '';
     }
   }
 
-  async readErrors(n = 50): Promise<string[]> {
-    const lines = await this.readLatest(500);
-    return lines.filter((l) => l.includes('[ERROR]')).slice(-n);
+  readLogLines(n: number = 100): string[] {
+    const content = this.readLatestLog();
+    const lines = content.split('\n').filter(Boolean);
+    return lines.slice(-n);
   }
 }

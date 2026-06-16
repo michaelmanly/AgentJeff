@@ -1,6 +1,3 @@
-import { EventEmitter } from 'events';
-import { ScenarioType, AttemptRecord, EngineMetrics } from '../types.js';
-
 export type EngineEventType =
   | 'cycle.started'
   | 'cycle.completed'
@@ -12,26 +9,40 @@ export type EngineEventType =
   | 'improvement.done'
   | 'worker.result'
   | 'engine.paused'
-  | 'engine.stopped'
-  | 'engine.started';
+  | 'engine.stopped';
 
 export interface EngineEvent {
-  id: string;
   type: EngineEventType;
+  data: unknown;
   timestamp: number;
-  payload: Record<string, unknown>;
 }
 
-export const engineEvents = new EventEmitter();
+type EventHandler = (event: EngineEvent) => void;
 
-let eventCounter = 0;
-export function emitEngineEvent(type: EngineEventType, payload: Record<string, unknown>) {
-  const event: EngineEvent = {
-    id: `evt-${++eventCounter}`,
-    type,
-    timestamp: Date.now(),
-    payload,
-  };
-  engineEvents.emit(type, event);
-  engineEvents.emit('*', event);
+export class EngineEventEmitter {
+  private handlers: Map<EngineEventType, EventHandler[]> = new Map();
+
+  on(type: EngineEventType, handler: EventHandler): void {
+    const existing = this.handlers.get(type) ?? [];
+    this.handlers.set(type, [...existing, handler]);
+  }
+
+  off(type: EngineEventType, handler: EventHandler): void {
+    const existing = this.handlers.get(type) ?? [];
+    this.handlers.set(type, existing.filter(h => h !== handler));
+  }
+
+  emit(type: EngineEventType, data: unknown): void {
+    const event: EngineEvent = { type, data, timestamp: Date.now() };
+    const handlers = this.handlers.get(type) ?? [];
+    for (const handler of handlers) {
+      try {
+        handler(event);
+      } catch {
+        // ignore handler errors
+      }
+    }
+  }
 }
+
+export const engineEvents = new EngineEventEmitter();

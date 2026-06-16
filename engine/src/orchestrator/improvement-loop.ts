@@ -1,99 +1,98 @@
-import { MemoryManager } from '../memory/index.js';
-import { StrategyRecord, ScenarioType } from '../types.js';
-import { emitEngineEvent } from '../utils/events.js';
-import { logger } from '../utils/logger.js';
+import type { StrategyRecord, AttemptRecord, ScenarioType } from '../types.js';
+import type { MemoryManager } from '../memory/index.js';
+import { createLogger } from '../utils/logger.js';
+import { engineEvents } from '../utils/events.js';
 
-const ALL_SCENARIO_TYPES: ScenarioType[] = [
-  'edge-case', 'regression', 'performance', 'flaky-test',
-  'adversarial-review', 'missing-test', 'unsafe-change', 'benchmark-degradation',
-];
+const logger = createLogger('ImprovementLoop');
 
-export async function runImprovementCycle(memory: MemoryManager): Promise<void> {
-  logger.info('Running improvement loop...');
+export class ImprovementLoop {
+  constructor(private memory: MemoryManager, private intervalIterations: number) {}
 
-  const attempts = await memory.getRecentAttempts(100);
-  if (attempts.length < 5) {
-    logger.info('Not enough data for improvement yet');
-    return;
+  async runIfDue(currentIteration: number): Promise<void> {
+    if (currentIteration % this.intervalIterations !== 0 || currentIteration === 0) return;
+    await this.run();
   }
 
-  // Compute per-scenario-type score averages
-  const typeScores = new Map<ScenarioType, number[]>();
-  for (const attempt of attempts) {
-    const scores = typeScores.get(attempt.scenarioType) ?? [];
-    scores.push(attempt.score);
-    typeScores.set(attempt.scenarioType, scores);
+  async run(): Promise<void> {
+    logger.info('Running improvement loop');
+
+    const recentAttempts = await this.memory.getRecentAttempts(50);
+    if (recentAttempts.length < 5) {
+      logger.info('Not enough attempts for improvement analysis');
+      return;
+    }
+
+    await this.updateStrategyWeights(recentAttempts);
+    await this.pruneScenarios(recentAttempts);
+
+    engineEvents.emit('improvement.done', { iterationsReviewed: recentAttempts.length });
+    logger.info('Improvement loop complete');
   }
 
-  const typeAvgs = new Map<ScenarioType, number>();
-  for (const [type, scores] of typeScores) {
-    typeAvgs.set(type, scores.reduce((a, b) => a + b, 0) / scores.length);
-  }
+  private async updateStrategyWeights(attempts: AttemptRecord[]): Promise<void> {
+    const strategies = await this.memory.getAllStrategies();
+    
+    const strategyAttempts = new Map<string, AttemptRecord[]>();
+    for (const attempt of attempts) {
+      const key = attempt.strategy;
+      const list = strategyAttempts.get(key) ?? [];
+      list.push(attempt);
+      strategyAttempts.set(key, list);
+    }
 
-  logger.info('Scenario type averages', Object.fromEntries(typeAvgs));
+    const updatedStrategies: StrategyRecord[] = strategies.map(strategy => {
+      const stratAttempts = strategyAttempts.get(strategy.name) ?? [];
+      if (stratAttempts.length === 0) return strategy;
 
-  // Update strategy weights: bias toward high-scoring types
-  const strategies = await memory.getAllStrategies();
-  let updated = false;
+      const avgScore = stratAttempts.reduce((sum, a) => sum + a.score, 0) / stratAttempts.length;
+      const wins = stratAttempts.filter(a => a.score >= 60).length;
+      const winRate = wins / stratAttempts.length;
 
-  for (const strategy of strategies) {
-    const newWeights = { ...strategy.scenarioWeights };
-    let changed = false;
-
-    for (const type of ALL_SCENARIO_TYPES) {
-      const avg = typeAvgs.get(type);
-      if (avg === undefined) continue;
-
-      const current = newWeights[type] ?? 1;
-      if (avg > 60 && current < 4) {
-        newWeights[type] = Math.min(4, current + 1);
-        changed = true;
-        logger.info(`Increased weight for ${type}: ${current} -> ${newWeights[type]}`);
-      } else if (avg < 20 && current > 1) {
-        newWeights[type] = Math.max(1, current - 1);
-        changed = true;
-        logger.info(`Decreased weight for ${type}: ${current} -> ${newWeights[type]}`);
+      const scenarioScores = new Map<ScenarioType, number[]>();
+      for (const attempt of stratAttempts) {
+        const scores = scenarioScores.get(attempt.scenarioType) ?? [];
+        scores.push(attempt.score);
+        scenarioScores.set(attempt.scenarioType, scores);
       }
-    }
 
-    if (changed) {
-      const strategyAttempts = attempts.filter((a) => a.strategy === strategy.name);
-      const strategyAvg = strategyAttempts.length
-        ? strategyAttempts.reduce((sum, a) => sum + a.score, 0) / strategyAttempts.length
-        : 0;
+      const updatedWeights = { ...strategy.scenarioWeights };
+      for (const [type, scores] of scenarioScores) {
+        const typeAvg = scores.reduce((s, v) => s + v, 0) / scores.length;
+        const currentWeight = updatedWeights[type] ?? 1.0;
+        updatedWeights[type] = currentWeight * 0.8 + (typeAvg / 50) * 0.2;
+      }
 
-      await memory.updateStrategy({
+      return {
         ...strategy,
-        scenarioWeights: newWeights as Record<ScenarioType, number>,
-        avgScore: strategyAvg,
-        usageCount: strategy.usageCount + strategyAttempts.length,
-        winRate: strategyAttempts.filter((a) => a.score > 50).length / Math.max(1, strategyAttempts.length),
+        avgScore,
+        winRate,
+        usageCount: strategy.usageCount + stratAttempts.length,
+        scenarioWeights: updatedWeights,
         lastUsed: Date.now(),
-      });
-      updated = true;
+      };
+    });
+
+    await this.memory.saveStrategies(updatedStrategies);
+    
+    const bestStrategy = updatedStrategies.sort((a, b) => b.avgScore - a.avgScore)[0];
+    if (bestStrategy) {
+      logger.info(`Best strategy: ${bestStrategy.name} (avg score: ${bestStrategy.avgScore.toFixed(1)})`);
     }
   }
 
-  // Compare strategies
-  const allStrategies = await memory.getAllStrategies();
-  if (allStrategies.length >= 2) {
-    const sorted = allStrategies.sort((a, b) => b.avgScore - a.avgScore);
-    const best = sorted[0];
-    const worst = sorted[sorted.length - 1];
-    const gain = best.avgScore - worst.avgScore;
+  private async pruneScenarios(attempts: AttemptRecord[]): Promise<void> {
+    const typePerformance = new Map<ScenarioType, { total: number; passed: number }>();
+    
+    for (const attempt of attempts) {
+      const perf = typePerformance.get(attempt.scenarioType) ?? { total: 0, passed: 0 };
+      perf.total++;
+      if (attempt.verification.passed) perf.passed++;
+      typePerformance.set(attempt.scenarioType, perf);
+    }
 
-    logger.info(`Best strategy: ${best.name} (avg: ${best.avgScore.toFixed(1)}) vs worst: ${worst.name} (avg: ${worst.avgScore.toFixed(1)}) | Gain: ${gain.toFixed(1)}`);
+    for (const [type, perf] of typePerformance) {
+      const successRate = perf.passed / perf.total;
+      logger.info(`Scenario type ${type}: ${perf.passed}/${perf.total} passed (${(successRate * 100).toFixed(0)}%)`);
+    }
   }
-
-  // Find repeated mistakes
-  const mistakes = await memory.getRepeatedMistakes();
-  if (mistakes.length) {
-    logger.warn('Repeated failures detected', mistakes);
-  }
-
-  emitEngineEvent('improvement.done', {
-    strategiesUpdated: updated,
-    typeAverages: Object.fromEntries(typeAvgs),
-    mistakes,
-  });
 }

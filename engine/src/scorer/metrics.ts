@@ -1,10 +1,10 @@
-import { EngineMetrics } from '../types.js';
+import type { EngineMetrics } from '../types.js';
 
-export function emptyMetrics(): EngineMetrics {
+export function createInitialMetrics(): EngineMetrics {
   return {
     iterations: 0,
     failures: 0,
-    avgCycleTimeMs: 0,
+    avgCycleTime: 0,
     scoreTrend: [],
     repeatedMistakes: 0,
     builderChangesAttempted: 0,
@@ -26,8 +26,6 @@ export function emptyMetrics(): EngineMetrics {
   };
 }
 
-export function updateMetrics(metrics: EngineMetrics, cycleMs: number): EngineMetrics {
-  const n = metrics.iterations;
-  const newAvg = n === 0 ? cycleMs : (metrics.avgCycleTimeMs * n + cycleMs) / (n + 1);
-  return { ...metrics, avgCycleTimeMs: newAvg };
+export function updateMetrics(metrics: EngineMetrics, update: Partial<EngineMetrics>): EngineMetrics {
+  return { ...metrics, ...update };
 }

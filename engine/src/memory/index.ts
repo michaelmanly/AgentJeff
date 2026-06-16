@@ -1,145 +1,142 @@
-import {
-  AttemptRecord,
-  StrategyRecord,
-  ScenarioRecord,
-  ScenarioType,
-  EngineMetrics,
-} from '../types.js';
-import * as store from './store.js';
-import { logger } from '../utils/logger.js';
+import { join } from 'path';
+import type { AttemptRecord, StrategyRecord, ScenarioRecord, ScenarioType } from '../types.js';
+import { MemoryStore } from './store.js';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('MemoryManager');
+
+const DEFAULT_STRATEGIES: StrategyRecord[] = [
+  {
+    id: 'balanced',
+    name: 'balanced',
+    description: 'Balanced approach across all scenario types',
+    promptStyle: 'analytical',
+    scenarioWeights: {
+      'edge-case': 1.0,
+      'regression': 1.0,
+      'performance': 0.8,
+      'flaky-test': 0.8,
+      'adversarial-review': 0.9,
+      'missing-test': 1.0,
+      'unsafe-change': 0.7,
+      'benchmark-degradation': 0.6,
+    },
+    avgScore: 50,
+    usageCount: 0,
+    winRate: 0,
+    lastUsed: 0,
+  },
+  {
+    id: 'bug-focused',
+    name: 'bug-focused',
+    description: 'Focus on finding and fixing bugs',
+    promptStyle: 'critical',
+    scenarioWeights: {
+      'edge-case': 1.5,
+      'regression': 1.5,
+      'performance': 0.5,
+      'flaky-test': 1.0,
+      'adversarial-review': 1.2,
+      'missing-test': 1.3,
+      'unsafe-change': 1.0,
+      'benchmark-degradation': 0.4,
+    },
+    avgScore: 50,
+    usageCount: 0,
+    winRate: 0,
+    lastUsed: 0,
+  },
+];
 
 export class MemoryManager {
-  async saveAttempt(attempt: AttemptRecord): Promise<void> {
-    await store.appendAttempt(attempt);
-    await store.appendScore(attempt.score);
+  private store: MemoryStore;
+
+  constructor(memoryDir: string) {
+    this.store = new MemoryStore(
+      join(memoryDir, 'attempts.jsonl'),
+      join(memoryDir, 'strategies.json'),
+      join(memoryDir, 'scenarios.json'),
+      join(memoryDir, 'scores.json'),
+    );
   }
 
-  async getRecentAttempts(n = 50): Promise<AttemptRecord[]> {
-    return store.readAttempts(n);
+  async saveAttempt(attempt: AttemptRecord): Promise<void> {
+    await this.store.appendAttempt(attempt);
+    await this.store.appendScore(attempt.score);
+    logger.info(`Saved attempt ${attempt.id} with score ${attempt.score}`);
+  }
+
+  async getRecentAttempts(n: number): Promise<AttemptRecord[]> {
+    return this.store.readAttempts(n);
   }
 
   async getBestStrategy(): Promise<StrategyRecord | null> {
-    const strategies = await store.loadStrategies();
-    if (!strategies.length) return null;
-    return strategies.sort((a, b) => b.avgScore - a.avgScore)[0];
+    let strategies = await this.store.loadStrategies();
+    if (strategies.length === 0) {
+      await this.store.saveStrategies(DEFAULT_STRATEGIES);
+      strategies = DEFAULT_STRATEGIES;
+    }
+    const sorted = [...strategies].sort((a, b) => b.avgScore - a.avgScore);
+    return sorted[0] ?? null;
   }
 
   async updateStrategy(strategy: StrategyRecord): Promise<void> {
-    const strategies = await store.loadStrategies();
-    const idx = strategies.findIndex((s) => s.id === strategy.id);
+    const strategies = await this.store.loadStrategies();
+    const idx = strategies.findIndex(s => s.id === strategy.id);
     if (idx >= 0) {
       strategies[idx] = strategy;
     } else {
       strategies.push(strategy);
     }
-    await store.saveStrategies(strategies);
+    await this.store.saveStrategies(strategies);
   }
 
-  async getAllStrategies(): Promise<StrategyRecord[]> {
-    return store.loadStrategies();
-  }
-
-  async getScoreTrend(n = 20): Promise<number[]> {
-    const scores = await store.loadScores();
-    return scores.slice(-n);
+  async getScoreTrend(): Promise<number[]> {
+    const scores = await this.store.loadScores();
+    return scores.slice(-20);
   }
 
   async getRepeatedMistakes(): Promise<string[]> {
-    const attempts = await store.readAttempts(100);
-    const failed = attempts.filter((a) => !a.verification.passed);
-    const errorMap = new Map<string, number>();
-
-    for (const attempt of failed) {
+    const attempts = await this.store.readAttempts(50);
+    const failedAttempts = attempts.filter(a => !a.verification.passed);
+    const patternCounts: Record<string, number> = {};
+    
+    for (const attempt of failedAttempts) {
       for (const check of attempt.verification.checks) {
         if (!check.passed) {
-          const key = check.name;
-          errorMap.set(key, (errorMap.get(key) ?? 0) + 1);
+          const key = `${check.name}: ${check.output.slice(0, 100)}`;
+          patternCounts[key] = (patternCounts[key] ?? 0) + 1;
         }
       }
     }
-
-    return Array.from(errorMap.entries())
-      .filter(([, count]) => count >= 2)
+    
+    return Object.entries(patternCounts)
+      .filter(([, count]) => count > 1)
       .sort(([, a], [, b]) => b - a)
-      .map(([name, count]) => `${name} (${count}x)`);
+      .slice(0, 10)
+      .map(([pattern, count]) => `${pattern} (${count}x)`);
   }
 
-  async computeMetrics(): Promise<Partial<EngineMetrics>> {
-    const attempts = await store.readAttempts(200);
-    const scores = await store.loadScores();
-
-    if (!attempts.length) return {};
-
-    const accepted = attempts.filter((a) => a.verification.passed);
-    const reverted = attempts.filter((a) => !a.verification.passed);
-    const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-
-    const criticWarnings = attempts.filter(
-      (a) => a.critique.warnings.length > 0 && !a.verification.passed
-    ).length;
-    const criticMisses = attempts.filter(
-      (a) => a.critique.approved && !a.verification.passed
-    ).length;
-
-    const scenarioTypes = new Set(attempts.map((a) => a.scenarioType));
-    const novelty = scenarioTypes.size / 8; // 8 scenario types total
-
-    return {
-      iterations: attempts.length,
-      failures: reverted.length,
-      scoreTrend: scores.slice(-20),
-      builderChangesAttempted: attempts.length,
-      builderChangesAccepted: accepted.length,
-      builderChangesReverted: reverted.length,
-      builderRegressionRate: attempts.length > 0 ? reverted.length / attempts.length : 0,
-      criticCorrectWarnings: criticWarnings,
-      criticMisses,
-      scenarioNovelty: novelty,
-      verifierChecksRun: attempts.reduce((sum, a) => sum + a.verification.checks.length, 0),
-    };
+  async getAllStrategies(): Promise<StrategyRecord[]> {
+    const strategies = await this.store.loadStrategies();
+    if (strategies.length === 0) {
+      await this.store.saveStrategies(DEFAULT_STRATEGIES);
+      return DEFAULT_STRATEGIES;
+    }
+    return strategies;
   }
 
-  async initDefaultStrategies(): Promise<void> {
-    const existing = await store.loadStrategies();
-    if (existing.length > 0) return;
+  async saveStrategies(strategies: StrategyRecord[]): Promise<void> {
+    await this.store.saveStrategies(strategies);
+  }
 
-    const defaultWeights: Record<ScenarioType, number> = {
-      'edge-case': 2,
-      'regression': 2,
-      'performance': 1,
-      'flaky-test': 1,
-      'adversarial-review': 1,
-      'missing-test': 2,
-      'unsafe-change': 1,
-      'benchmark-degradation': 1,
-    };
+  async getScenarios(): Promise<ScenarioRecord[]> {
+    return this.store.loadScenarios();
+  }
 
-    const strategies: StrategyRecord[] = [
-      {
-        id: 'strategy-balanced',
-        name: 'balanced',
-        description: 'Equal weight across all scenario types',
-        promptStyle: 'detailed',
-        scenarioWeights: defaultWeights,
-        avgScore: 0,
-        usageCount: 0,
-        winRate: 0,
-        lastUsed: 0,
-      },
-      {
-        id: 'strategy-aggressive',
-        name: 'aggressive',
-        description: 'Focus on edge cases and regressions',
-        promptStyle: 'concise',
-        scenarioWeights: { ...defaultWeights, 'edge-case': 4, 'regression': 4 },
-        avgScore: 0,
-        usageCount: 0,
-        winRate: 0,
-        lastUsed: 0,
-      },
-    ];
-
-    await store.saveStrategies(strategies);
-    logger.info('Initialized default strategies');
+  async saveScenario(scenario: ScenarioRecord): Promise<void> {
+    const scenarios = await this.store.loadScenarios();
+    scenarios.push(scenario);
+    await this.store.saveScenarios(scenarios);
   }
 }

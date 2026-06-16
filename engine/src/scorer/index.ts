@@ -1,114 +1,106 @@
-import { CritiqueResult, VerificationResult, AttemptMetrics } from '../types.js';
-import { logger } from '../utils/logger.js';
+import type { CritiqueResult, VerificationResult, AttemptMetrics } from '../types.js';
+import { createLogger } from '../utils/logger.js';
 
-export interface ScoreBreakdown {
-  total: number;
-  verificationPassed: number;
-  testsImproved: number;
-  criticApproved: number;
-  noRegressions: number;
-  speed: number;
-  deductions: number;
-  details: string[];
+const logger = createLogger('Scorer');
+
+export interface ScoringResult {
+  score: number;
+  breakdown: Record<string, number>;
 }
 
 export class Scorer {
   score(
     critique: CritiqueResult,
     verification: VerificationResult,
-    metrics: AttemptMetrics,
-    cycleMs: number
-  ): number {
-    const breakdown = this.breakdown(critique, verification, metrics, cycleMs);
-    logger.debug('Score breakdown', { total: breakdown.total, details: breakdown.details });
-    return Math.max(0, Math.min(100, breakdown.total));
+    previousMetrics?: AttemptMetrics,
+    currentMetrics?: AttemptMetrics,
+    durationMs?: number,
+  ): ScoringResult {
+    const breakdown: Record<string, number> = {};
+    let score = 0;
+
+    if (verification.passed) {
+      breakdown['verification_passed'] = 40;
+      score += 40;
+    } else {
+      breakdown['verification_passed'] = 0;
+    }
+
+    if (currentMetrics && previousMetrics) {
+      if (currentMetrics.testsPassed >= previousMetrics.testsPassed) {
+        breakdown['tests_maintained'] = 20;
+        score += 20;
+      } else {
+        breakdown['tests_maintained'] = 0;
+      }
+    } else if (currentMetrics && currentMetrics.testsPassed > 0) {
+      breakdown['tests_maintained'] = 10;
+      score += 10;
+    }
+
+    if (critique.approved) {
+      breakdown['critic_approved'] = 15;
+      score += 15;
+    } else {
+      breakdown['critic_approved'] = 0;
+    }
+
+    const regressions = currentMetrics?.regressions ?? 0;
+    if (regressions === 0) {
+      breakdown['no_regressions'] = 10;
+      score += 10;
+    } else {
+      breakdown['regressions_penalty'] = -30 * Math.min(regressions, 1);
+      score -= 30 * Math.min(regressions, 1);
+    }
+
+    if (durationMs !== undefined && durationMs < 30000) {
+      breakdown['speed_bonus'] = 5;
+      score += 5;
+    }
+
+    if (critique.risks.some(r => r.toLowerCase().includes('critical'))) {
+      breakdown['critical_risk_penalty'] = -10;
+      score -= 10;
+    }
+
+    if (currentMetrics?.buildSuccess === false) {
+      breakdown['build_failed_penalty'] = -20;
+      score -= 20;
+    }
+
+    score = Math.max(0, Math.min(100, score));
+    breakdown['final'] = score;
+
+    logger.debug(`Score: ${score}`, breakdown);
+    return { score, breakdown };
   }
 
-  breakdown(
-    critique: CritiqueResult,
-    verification: VerificationResult,
-    metrics: AttemptMetrics,
-    cycleMs: number
-  ): ScoreBreakdown {
-    let total = 0;
-    const details: string[] = [];
+  extractAttemptMetrics(verification: VerificationResult): AttemptMetrics {
+    const testsCheck = verification.checks.find(c => c.name === 'tests');
+    const tsCheck = verification.checks.find(c => c.name === 'typescript');
 
-    // +40: verification passed
-    const verificationPassed = verification.passed ? 40 : 0;
-    if (verificationPassed) details.push('+40 verification passed');
-    total += verificationPassed;
-
-    // +20: tests improved or maintained
-    const testsImproved = metrics.testsFailed === 0 && metrics.testsRun > 0 ? 20 : 0;
-    if (testsImproved) details.push('+20 all tests passing');
-    total += testsImproved;
-
-    // +15: critic approved
-    const criticApproved = critique.approved ? 15 : 0;
-    if (criticApproved) details.push('+15 critic approved');
-    total += criticApproved;
-
-    // +10: no regressions
-    const noRegressions = metrics.regressions === 0 ? 10 : 0;
-    if (noRegressions) details.push('+10 no regressions');
-    total += noRegressions;
-
-    // +5: speed bonus (< 10s cycle)
-    const speed = cycleMs < 10000 ? 5 : cycleMs < 30000 ? 2 : 0;
-    if (speed) details.push(`+${speed} speed bonus`);
-    total += speed;
-
-    // Deductions
-    let deductions = 0;
-    if (metrics.regressions > 0) {
-      deductions += 30;
-      details.push('-30 regressions found');
-    }
-    if (critique.risks.some((r) => r.includes('Forbidden'))) {
-      deductions += 10;
-      details.push('-10 forbidden patterns');
-    }
-    if (critique.warnings.length > 3) {
-      deductions += 5;
-      details.push('-5 many warnings');
-    }
-    if (!verification.passed && metrics.lintErrors > 0) {
-      deductions += 10;
-      details.push('-10 lint errors');
+    let testsRun = 0, testsPassed = 0, testsFailed = 0;
+    if (testsCheck) {
+      const runMatch = testsCheck.output.match(/(\d+) total/);
+      const passMatch = testsCheck.output.match(/(\d+) passed/);
+      const failMatch = testsCheck.output.match(/(\d+) failed/);
+      testsRun = runMatch ? parseInt(runMatch[1], 10) : 0;
+      testsPassed = passMatch ? parseInt(passMatch[1], 10) : 0;
+      testsFailed = failMatch ? parseInt(failMatch[1], 10) : 0;
     }
 
-    total -= deductions;
-
-    return { total, verificationPassed, testsImproved, criticApproved, noRegressions, speed, deductions, details };
-  }
-
-  extractMetrics(verification: VerificationResult): AttemptMetrics {
-    const testCheck = verification.checks.find((c) => c.name === 'unit-tests');
-    const buildCheck = verification.checks.find((c) => c.name === 'typescript-build');
-    const regressionCheck = verification.checks.find((c) => c.name === 'regression-check');
-
-    let passed = 0, failed = 0, total = 0;
-    if (testCheck) {
-      const passedMatch = testCheck.output.match(/(\d+) passed/);
-      const failedMatch = testCheck.output.match(/(\d+) failed/);
-      passed = parseInt(passedMatch?.[1] ?? '0');
-      failed = parseInt(failedMatch?.[1] ?? '0');
-      total = passed + failed;
-    }
-
-    const lintErrors = buildCheck && !buildCheck.passed
-      ? (buildCheck.output.match(/error TS\d+/g) ?? []).length
+    const lintErrors = tsCheck
+      ? (tsCheck.output.match(/error TS\d+/g) ?? []).length
       : 0;
 
-    const regressions = regressionCheck && !regressionCheck.passed ? 1 : 0;
-
     return {
-      testsRun: total,
-      testsPassed: passed,
-      testsFailed: failed,
+      testsRun,
+      testsPassed,
+      testsFailed,
       lintErrors,
-      buildSuccess: buildCheck?.passed ?? false,
-      regressions,
+      buildSuccess: tsCheck?.passed ?? true,
+      regressions: testsFailed > 0 ? 1 : 0,
     };
   }
 }

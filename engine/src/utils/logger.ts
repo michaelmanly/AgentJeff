@@ -1,41 +1,39 @@
-import fs from 'fs';
-import path from 'path';
+import { appendFileSync, mkdirSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const LOG_DIR = path.join(process.cwd(), 'artifacts', 'run-logs');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-function ensureDir() {
-  if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
-}
+const logsDir = join(__dirname, '../../artifacts/run-logs');
+const date = new Date().toISOString().split('T')[0];
+const logFile = join(logsDir, `engine-${date}.log`);
 
-function timestamp() {
-  return new Date().toISOString();
-}
-
-const logDate = new Date().toISOString().slice(0, 10);
-let logStream: fs.WriteStream | null = null;
-
-function getStream(): fs.WriteStream {
-  if (!logStream) {
-    ensureDir();
-    const logFile = path.join(LOG_DIR, `engine-${logDate}.log`);
-    logStream = fs.createWriteStream(logFile, { flags: 'a' });
+function ensureLogsDir() {
+  if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
   }
-  return logStream;
 }
 
-function write(level: string, msg: string, data?: unknown) {
-  const line = `[${timestamp()}] [${level}] ${msg}${data !== undefined ? ' ' + JSON.stringify(data) : ''}`;
+type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+
+function log(level: LogLevel, component: string, message: string, data?: unknown) {
+  const ts = new Date().toISOString();
+  const line = `[${ts}] [${level}] [${component}] ${message}${data !== undefined ? ' ' + JSON.stringify(data) : ''}`;
   console.log(line);
   try {
-    getStream().write(line + '\n');
+    ensureLogsDir();
+    appendFileSync(logFile, line + '\n');
   } catch {
-    // ignore log write failures
+    // ignore log write errors
   }
 }
 
-export const logger = {
-  info: (msg: string, data?: unknown) => write('INFO', msg, data),
-  warn: (msg: string, data?: unknown) => write('WARN', msg, data),
-  error: (msg: string, data?: unknown) => write('ERROR', msg, data),
-  debug: (msg: string, data?: unknown) => write('DEBUG', msg, data),
-};
+export function createLogger(component: string) {
+  return {
+    info: (message: string, data?: unknown) => log('INFO', component, message, data),
+    warn: (message: string, data?: unknown) => log('WARN', component, message, data),
+    error: (message: string, data?: unknown) => log('ERROR', component, message, data),
+    debug: (message: string, data?: unknown) => log('DEBUG', component, message, data),
+  };
+}

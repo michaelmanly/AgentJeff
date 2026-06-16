@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": "balanced",
+    "name": "balanced",
+    "description": "Balanced approach across all scenario types",
+    "promptStyle": "analytical",
+    "scenarioWeights": {
+      "edge-case": 1,
+      "regression": 1,
+      "performance": 0.8,
+      "flaky-test": 0.8,
+      "adversarial-review": 0.9,
+      "missing-test": 1,
+      "unsafe-change": 0.7,
+      "benchmark-degradation": 0.6
+    },
+    "avgScore": 50,
+    "usageCount": 0,
+    "winRate": 0,
+    "lastUsed": 0
+  },
+  {
+    "id": "bug-focused",
+    "name": "bug-focused",
+    "description": "Focus on finding and fixing bugs",
+    "promptStyle": "critical",
+    "scenarioWeights": {
+      "edge-case": 1.5,
+      "regression": 1.5,
+      "performance": 0.5,
+      "flaky-test": 1,
+      "adversarial-review": 1.2,
+      "missing-test": 1.3,
+      "unsafe-change": 1,
+      "benchmark-degradation": 0.4
+    },
+    "avgScore": 50,
+    "usageCount": 0,
+    "winRate": 0,
+    "lastUsed": 0
+  }
+]

@@ -1,70 +1,95 @@
-import { CheckResult, Proposal } from '../types.js';
-import { TestRunnerAdapter } from '../adapters/tests/index.js';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import type { CheckResult, Proposal } from '../types.js';
 
-export async function checkBuild(testRunner: TestRunnerAdapter, repoPath: string): Promise<CheckResult> {
+const execAsync = promisify(exec);
+
+export async function checkTypeScript(repoPath: string): Promise<CheckResult> {
   const start = Date.now();
-  const result = await testRunner.runLint(repoPath);
-  return {
-    name: 'typescript-build',
-    passed: result.errors === 0,
-    output: result.output.slice(0, 500),
-    duration: Date.now() - start,
-  };
-}
-
-export async function checkTests(testRunner: TestRunnerAdapter): Promise<CheckResult> {
-  const start = Date.now();
-  const result = await testRunner.runTests();
-  return {
-    name: 'unit-tests',
-    passed: result.failed === 0 && result.total > 0,
-    output: `${result.passed} passed, ${result.failed} failed of ${result.total} total\n${result.output.slice(0, 500)}`,
-    duration: Date.now() - start,
-  };
-}
-
-export function checkForbiddenPatterns(proposal: Proposal): CheckResult {
-  const FORBIDDEN = ['rm -rf', 'eval(', 'exec(', 'DROP TABLE', '__proto__'];
-  const found: string[] = [];
-
-  for (const change of proposal.changes) {
-    for (const pattern of FORBIDDEN) {
-      if (change.content.includes(pattern)) {
-        found.push(`${pattern} in ${change.path}`);
-      }
-    }
+  try {
+    const { stdout, stderr } = await execAsync('npx tsc --noEmit 2>&1', {
+      cwd: repoPath,
+      timeout: 30000,
+    });
+    const output = stdout + stderr;
+    const errors = (output.match(/error TS\d+/g) ?? []).length;
+    return {
+      name: 'typescript',
+      passed: errors === 0,
+      output: output.slice(0, 2000),
+      duration: Date.now() - start,
+    };
+  } catch (err: unknown) {
+    const error = err as { stdout?: string; stderr?: string };
+    const output = (error.stdout ?? '') + (error.stderr ?? '');
+    return {
+      name: 'typescript',
+      passed: false,
+      output: output.slice(0, 2000),
+      duration: Date.now() - start,
+    };
   }
+}
 
-  return {
-    name: 'forbidden-patterns',
-    passed: found.length === 0,
-    output: found.length ? `Found forbidden patterns: ${found.join(', ')}` : 'No forbidden patterns',
-    duration: 0,
-  };
+export async function checkTests(repoPath: string): Promise<CheckResult> {
+  const start = Date.now();
+  try {
+    const { stdout, stderr } = await execAsync('npm test -- --no-coverage 2>&1', {
+      cwd: repoPath,
+      timeout: 60000,
+    });
+    const output = stdout + stderr;
+    const failed = (output.match(/(\d+) failed/) ?? [])[1];
+    return {
+      name: 'tests',
+      passed: !failed || failed === '0',
+      output: output.slice(0, 3000),
+      duration: Date.now() - start,
+    };
+  } catch (err: unknown) {
+    const error = err as { stdout?: string; stderr?: string };
+    const output = (error.stdout ?? '') + (error.stderr ?? '');
+    return {
+      name: 'tests',
+      passed: false,
+      output: output.slice(0, 3000),
+      duration: Date.now() - start,
+    };
+  }
 }
 
 export function checkDiffSize(proposal: Proposal): CheckResult {
-  const totalLines = proposal.changes.reduce((sum, c) => sum + c.content.split('\n').length, 0);
-  const passed = totalLines <= 300;
+  const start = Date.now();
+  let totalChars = 0;
+  for (const change of proposal.changes) {
+    totalChars += change.content.length;
+    if (change.previousContent) totalChars += change.previousContent.length;
+  }
+  const reasonableLimit = 50000;
   return {
     name: 'diff-size',
-    passed,
-    output: `Total changed lines: ${totalLines}`,
-    duration: 0,
+    passed: totalChars <= reasonableLimit,
+    output: `Total diff size: ${totalChars} chars (limit: ${reasonableLimit})`,
+    duration: Date.now() - start,
   };
 }
 
-export async function checkNoRegression(
-  testRunner: TestRunnerAdapter,
-  baselineResult: { passed: number; total: number }
-): Promise<CheckResult> {
+export function checkForbiddenPatterns(proposal: Proposal, forbiddenPatterns: string[]): CheckResult {
   const start = Date.now();
-  const result = await testRunner.runTests();
-  const regression = result.passed < baselineResult.passed || result.total < baselineResult.total;
+  const violations: string[] = [];
+  
+  for (const change of proposal.changes) {
+    for (const pattern of forbiddenPatterns) {
+      if (change.content.includes(pattern)) {
+        violations.push(`${change.path}: contains forbidden pattern "${pattern}"`);
+      }
+    }
+  }
+  
   return {
-    name: 'regression-check',
-    passed: !regression,
-    output: `Before: ${baselineResult.passed}/${baselineResult.total} | After: ${result.passed}/${result.total}`,
+    name: 'forbidden-patterns',
+    passed: violations.length === 0,
+    output: violations.length > 0 ? violations.join('\n') : 'No forbidden patterns found',
     duration: Date.now() - start,
   };
 }

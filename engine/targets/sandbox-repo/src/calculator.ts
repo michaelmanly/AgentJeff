@@ -11,22 +11,11 @@ export function multiply(a: number, b: number): number {
 }
 
 export function divide(a: number, b: number): number {
-  // BUG: no division by zero check
-  return a / b;
+  return a / b; // BUG: no division by zero check
 }
 
 export function power(base: number, exp: number): number {
   return Math.pow(base, exp);
 }
 
-export function squareRoot(n: number): number {
-  // BUG: no check for negative numbers
-  return Math.sqrt(n);
-}
-
-export function percentage(value: number, total: number): number {
-  // BUG: no check for total === 0
-  return (value / total) * 100;
-}
-
-// MISSING: modulo, absolute value, factorial, clamp
+// MISSING: modulo, absolute value, factorial

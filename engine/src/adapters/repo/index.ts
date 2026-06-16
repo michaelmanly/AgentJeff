@@ -1,93 +1,101 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { execFile } from 'child_process';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { join } from 'path';
+import { exec } from 'child_process';
 import { promisify } from 'util';
-import { FileChange, RepoObservation, TestRunResult } from '../../types.js';
-import { logger } from '../../utils/logger.js';
+import type { RepoObservation, FileChange } from '../../types.js';
+import { createLogger } from '../../utils/logger.js';
 
-const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
+const logger = createLogger('RepoAdapter');
 
 export class RepoAdapter {
-  private root: string;
+  private repoPath: string;
 
   constructor(repoPath: string) {
-    this.root = path.resolve(repoPath);
-  }
-
-  private resolve(p: string): string {
-    const resolved = path.resolve(this.root, p);
-    if (!resolved.startsWith(this.root)) throw new Error(`Path escape: ${p}`);
-    return resolved;
-  }
-
-  async exec(cmd: string, args: string[] = []): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-    try {
-      const { stdout, stderr } = await execFileAsync(cmd, args, { cwd: this.root, timeout: 30000 });
-      return { stdout, stderr, exitCode: 0 };
-    } catch (err: any) {
-      return { stdout: err.stdout ?? '', stderr: err.stderr ?? String(err), exitCode: err.code ?? 1 };
-    }
-  }
-
-  async listFiles(dir = '.'): Promise<string[]> {
-    const resolved = this.resolve(dir);
-    try {
-      const entries = await fs.readdir(resolved, { withFileTypes: true });
-      return entries.map((e) => (e.isDirectory() ? `${e.name}/` : e.name));
-    } catch {
-      return [];
-    }
-  }
-
-  async readFile(p: string): Promise<string> {
-    return fs.readFile(this.resolve(p), 'utf-8');
-  }
-
-  async writeFile(p: string, content: string): Promise<void> {
-    const resolved = this.resolve(p);
-    await fs.mkdir(path.dirname(resolved), { recursive: true });
-    await fs.writeFile(resolved, content, 'utf-8');
+    this.repoPath = repoPath;
   }
 
   async observe(): Promise<RepoObservation> {
-    const [files, gitStatus, gitLog] = await Promise.all([
-      this.listFiles('src'),
-      this.exec('git', ['status', '--short']),
-      this.exec('git', ['log', '--oneline', '-5']),
-    ]);
+    const files = this.listFiles(this.repoPath);
+    
+    let gitStatus = '';
+    let recentCommits: string[] = [];
+    
+    try {
+      const { stdout: status } = await execAsync('git status --short', { cwd: this.repoPath });
+      gitStatus = status;
+    } catch {
+      gitStatus = 'git not available';
+    }
+    
+    try {
+      const { stdout: log } = await execAsync('git log --oneline -10', { cwd: this.repoPath });
+      recentCommits = log.trim().split('\n').filter(Boolean);
+    } catch {
+      recentCommits = [];
+    }
+    
+    const fileContents: Record<string, string> = {};
+    const srcFiles = files.filter(f => f.endsWith('.ts') && !f.includes('node_modules'));
+    for (const file of srcFiles.slice(0, 20)) {
+      try {
+        fileContents[file] = readFileSync(join(this.repoPath, file), 'utf-8');
+      } catch {
+        // skip unreadable files
+      }
+    }
+    
+    return { files, gitStatus, recentCommits, fileContents };
+  }
 
-    return {
-      files,
-      gitStatus: gitStatus.stdout.trim(),
-      recentCommits: gitLog.stdout.trim().split('\n').filter(Boolean),
-    };
+  private listFiles(dir: string, base: string = ''): string[] {
+    const results: string[] = [];
+    try {
+      const entries = readdirSync(dir);
+      for (const entry of entries) {
+        if (entry === 'node_modules' || entry === '.git' || entry === 'dist') continue;
+        const fullPath = join(dir, entry);
+        const relPath = base ? `${base}/${entry}` : entry;
+        const stat = statSync(fullPath);
+        if (stat.isDirectory()) {
+          results.push(...this.listFiles(fullPath, relPath));
+        } else {
+          results.push(relPath);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return results;
   }
 
   async applyChanges(changes: FileChange[]): Promise<void> {
     for (const change of changes) {
-      try {
-        const existing = await this.readFile(change.path).catch(() => '');
-        change.previousContent = existing;
-        await this.writeFile(change.path, change.content);
-        logger.info(`Applied change to ${change.path}`);
-      } catch (err) {
-        logger.error(`Failed to apply change to ${change.path}`, err);
-        throw err;
+      const fullPath = join(this.repoPath, change.path);
+      if (existsSync(fullPath)) {
+        change.previousContent = readFileSync(fullPath, 'utf-8');
       }
+      writeFileSync(fullPath, change.content, 'utf-8');
+      logger.info(`Applied change to ${change.path}`);
     }
   }
 
   async revertChanges(changes: FileChange[]): Promise<void> {
     for (const change of changes) {
       if (change.previousContent !== undefined) {
-        await this.writeFile(change.path, change.previousContent);
+        const fullPath = join(this.repoPath, change.path);
+        writeFileSync(fullPath, change.previousContent, 'utf-8');
         logger.info(`Reverted ${change.path}`);
       }
     }
   }
 
   async getDiff(): Promise<string> {
-    const result = await this.exec('git', ['diff']);
-    return result.stdout;
+    try {
+      const { stdout } = await execAsync('git diff', { cwd: this.repoPath });
+      return stdout;
+    } catch {
+      return '';
+    }
   }
 }

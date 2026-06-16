@@ -1,61 +1,59 @@
-import { InferenceAdapter, ScenarioType } from '../types.js';
-import { ScenarioWorker, WorkerResult } from './worker.js';
-import { RepoAdapter } from '../adapters/repo/index.js';
-import { Verifier } from '../verifier/index.js';
-import { Scorer } from '../scorer/index.js';
-import { MemoryManager } from '../memory/index.js';
-import { emitEngineEvent } from '../utils/events.js';
-import { logger } from '../utils/logger.js';
+import type { ScenarioType } from '../types.js';
+import { runWorkerCycle, type WorkerConfig, type WorkerResult } from './worker.js';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('WorkerPool');
 
 const SCENARIO_ROTATION: ScenarioType[] = [
   'edge-case',
   'missing-test',
-  'regression',
   'adversarial-review',
-  'performance',
+  'regression',
+  'flaky-test',
 ];
 
 export class WorkerPool {
-  private workers: ScenarioWorker[];
-  private cycleCount = 0;
+  private workerCount: number;
+  private model: string;
+  private baseUrl: string;
+  private repoPath: string;
 
-  constructor(
-    adapter: InferenceAdapter,
-    repo: RepoAdapter,
-    verifier: Verifier,
-    scorer: Scorer,
-    memory: MemoryManager,
-    poolSize: number
-  ) {
-    this.workers = Array.from({ length: poolSize }, (_, i) => new ScenarioWorker(i, adapter, repo, verifier, scorer, memory));
+  constructor(opts: {
+    workerCount?: number;
+    model?: string;
+    baseUrl?: string;
+    repoPath?: string;
+  } = {}) {
+    this.workerCount = opts.workerCount ?? 3;
+    this.model = opts.model ?? 'qwen2.5-coder:7b';
+    this.baseUrl = opts.baseUrl ?? 'http://localhost:11434';
+    this.repoPath = opts.repoPath ?? '.';
   }
 
-  async runOnce(): Promise<WorkerResult[]> {
-    const offset = this.cycleCount % SCENARIO_ROTATION.length;
-    const assignments: ScenarioType[] = this.workers.map(
-      (_, i) => SCENARIO_ROTATION[(offset + i) % SCENARIO_ROTATION.length]
-    );
-    this.cycleCount++;
+  async runCycle(): Promise<WorkerResult[]> {
+    logger.info(`Running worker pool with ${this.workerCount} workers`);
+    
+    const configs: WorkerConfig[] = Array.from({ length: this.workerCount }, (_, i) => ({
+      workerId: `worker-${i + 1}`,
+      scenarioType: SCENARIO_ROTATION[i % SCENARIO_ROTATION.length],
+      model: this.model,
+      baseUrl: this.baseUrl,
+      repoPath: this.repoPath,
+    }));
 
     const results = await Promise.allSettled(
-      this.workers.map((w, i) => w.runOnce(assignments[i]))
+      configs.map(config => runWorkerCycle(config))
     );
 
-    const outcomes: WorkerResult[] = results
-      .filter((r): r is PromiseFulfilledResult<WorkerResult> => r.status === 'fulfilled')
-      .map((r) => r.value);
-
-    const avgScore = outcomes.length
-      ? outcomes.reduce((s, r) => s + r.score, 0) / outcomes.length
-      : 0;
-
-    emitEngineEvent('worker.result', {
-      workers: outcomes.length,
-      avgScore: avgScore.toFixed(1),
-      passed: outcomes.filter((r) => r.passed).length,
+    return results.map((result, i) => {
+      if (result.status === 'fulfilled') return result.value;
+      logger.error(`Worker ${configs[i]!.workerId} rejected`, result.reason);
+      return {
+        workerId: configs[i]!.workerId,
+        scenarioType: configs[i]!.scenarioType,
+        attempt: null,
+        error: String(result.reason),
+      };
     });
-
-    logger.debug(`Workers done: ${outcomes.length} results, avgScore=${avgScore.toFixed(1)}`);
-    return outcomes;
   }
 }

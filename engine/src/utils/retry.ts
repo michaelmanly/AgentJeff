@@ -1,19 +1,29 @@
-export interface RetryPolicy {
+export interface RetryOptions {
   maxAttempts: number;
-  backoffMs: number;
+  delayMs: number;
+  backoff?: number;
+  onRetry?: (attempt: number, error: Error) => void;
 }
 
-export async function withRetry<T>(fn: () => Promise<T>, policy: RetryPolicy): Promise<T> {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt < policy.maxAttempts; attempt++) {
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions
+): Promise<T> {
+  const { maxAttempts, delayMs, backoff = 1, onRetry } = options;
+  let lastError: Error = new Error('No attempts made');
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (err) {
-      lastErr = err;
-      if (attempt < policy.maxAttempts - 1) {
-        await new Promise((r) => setTimeout(r, policy.backoffMs * Math.pow(2, attempt)));
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < maxAttempts) {
+        onRetry?.(attempt, lastError);
+        const delay = delayMs * Math.pow(backoff, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
-  throw lastErr;
+
+  throw lastError;
 }

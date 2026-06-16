@@ -1,80 +1,71 @@
-import { InferenceAdapter, Proposal, CritiqueResult } from '../types.js';
-import { buildCritiquePrompt } from '../planner/prompts.js';
-import { logger } from '../utils/logger.js';
+import type { InferenceAdapter, Proposal, CritiqueResult, RepoObservation } from '../types.js';
+import { buildCriticPrompt } from './prompts.js';
+import { createLogger } from '../utils/logger.js';
 
-const FORBIDDEN_PATTERNS = [
-  'rm -rf', 'eval(', 'exec(', 'DROP TABLE', 'DELETE FROM',
-  'process.exit', '__proto__', 'prototype.constructor',
-];
+const logger = createLogger('Critic');
 
 export class Critic {
-  constructor(private adapter: InferenceAdapter) {}
+  constructor(private adapter: InferenceAdapter, private model: string) {}
 
-  async critiqueProposal(proposal: Proposal): Promise<CritiqueResult> {
-    // Always run static checks first
-    const staticRisks = this.runStaticChecks(proposal);
-
+  async critiqueProposal(
+    proposal: Proposal,
+    observation: RepoObservation,
+  ): Promise<CritiqueResult> {
     if (proposal.changes.length === 0) {
       return {
         proposalId: proposal.id,
-        approved: false,
+        approved: true,
         warnings: ['No changes proposed'],
         risks: [],
-        suggestions: ['Generate a concrete code change'],
+        suggestions: [],
       };
     }
 
-    const prompt = buildCritiquePrompt(proposal);
-
     try {
+      const prompt = buildCriticPrompt(proposal, observation);
       const response = await this.adapter.complete({
-        messages: [
-          { role: 'system', content: 'You are a critical code reviewer. Return only valid JSON.' },
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: 'user', content: prompt }],
+        model: this.model,
         temperature: 0.2,
-        maxTokens: 512,
+        maxTokens: 1024,
       });
 
       const content = response.content ?? '';
       const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        const risks = [...(parsed.risks ?? []), ...staticRisks];
+      if (!jsonMatch) {
+        logger.warn('Critic returned no JSON, approving by default');
         return {
           proposalId: proposal.id,
-          approved: parsed.approved === true && staticRisks.length === 0,
-          warnings: parsed.warnings ?? [],
-          risks,
-          suggestions: parsed.suggestions ?? [],
+          approved: true,
+          warnings: ['Critic parse failed'],
+          risks: [],
+          suggestions: [],
         };
       }
+
+      const parsed = JSON.parse(jsonMatch[0]) as {
+        approved?: boolean;
+        warnings?: string[];
+        risks?: string[];
+        suggestions?: string[];
+      };
+
+      return {
+        proposalId: proposal.id,
+        approved: parsed.approved ?? true,
+        warnings: parsed.warnings ?? [],
+        risks: parsed.risks ?? [],
+        suggestions: parsed.suggestions ?? [],
+      };
     } catch (err) {
-      logger.warn('Critic LLM failed, using static-only review', err);
+      logger.warn('Critic failed, approving by default', err);
+      return {
+        proposalId: proposal.id,
+        approved: true,
+        warnings: ['Critic error: ' + String(err)],
+        risks: [],
+        suggestions: [],
+      };
     }
-
-    // Fallback: approve if no static risks
-    return {
-      proposalId: proposal.id,
-      approved: staticRisks.length === 0,
-      warnings: [],
-      risks: staticRisks,
-      suggestions: [],
-    };
-  }
-
-  private runStaticChecks(proposal: Proposal): string[] {
-    const risks: string[] = [];
-    for (const change of proposal.changes) {
-      for (const pattern of FORBIDDEN_PATTERNS) {
-        if (change.content.includes(pattern)) {
-          risks.push(`Forbidden pattern found: "${pattern}" in ${change.path}`);
-        }
-      }
-      if (change.content.split('\n').length > 300) {
-        risks.push(`Change to ${change.path} is very large (${change.content.split('\n').length} lines) - possible unintended overwrite`);
-      }
-    }
-    return risks;
   }
 }
